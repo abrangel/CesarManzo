@@ -119,4 +119,4 @@ Las contribuciones son bienvenidas. Si tienes alguna sugerencia para mejorar el 
 
 ## Contacto
 
-Cesar Manzo - tu-email@ejemplo.com - [Perfil de LinkedIn](https://www.linkedin.com/in/tu-perfil/)
+Cesar Manzo - abrangelm@gmail.com - [Perfil de LinkedIn](https://www.linkedin.com/in/cesar-manzo-0506231b5/)
