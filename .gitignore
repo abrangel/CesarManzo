@@ -12,3 +12,9 @@ yarn-error.log
 .vscode/
 *.swp
 *.swo
+
+# R project files
+.Rhistory
+.RData
+.Rproj.user
+*.Rproj

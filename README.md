@@ -1,6 +1,8 @@
-# Cesar Manzo // Interfaz Bio-AI
+# Portafolio de Cesar Manzo - Interfaz Bio-AI
 
 ¡Bienvenido al repositorio del portafolio de Cesar Manzo! Esta es una página web estática diseñada para mostrar las habilidades, proyectos y experiencia de Cesar en los campos de la bioinformática, la inteligencia artificial y la robótica.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Descripción
 
@@ -19,10 +21,31 @@ Este proyecto es una interfaz de usuario con un diseño futurista y temático de
 - **CSS3**: Para los estilos, animaciones y el diseño responsive.
 - **JavaScript**: Para la interactividad, efectos de tipeo, y la lógica de la navegación inmersiva.
 
-## Cómo Ver el Proyecto
+## Getting Started
 
-Simplemente abre el archivo `index.html` en tu navegador web. No se requiere un servidor local, ya que es una página estática.
+Para ver el proyecto en tu máquina local, sigue estos pasos:
 
-## Contribución
+1.  **Clona el repositorio**
+    ```sh
+    git clone https://github.com/abrangel/CesarManzo.git
+    ```
+2.  **Abre `index.html`**
+    Navega a la carpeta del proyecto y abre el archivo `index.html` en tu navegador.
 
-Actualmente, este es un proyecto personal, pero el feedback es bienvenido. Si tienes alguna sugerencia, no dudes en abrir un "issue".
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Si tienes alguna sugerencia para mejorar el proyecto, por favor abre un "issue" o envía un "pull request".
+
+1.  Haz un "Fork" del proyecto.
+2.  Crea tu rama de funcionalidad (`git checkout -b feature/AmazingFeature`).
+3.  Haz "Commit" de tus cambios (`git commit -m 'Add some AmazingFeature'`).
+4.  Haz "Push" a la rama (`git push origin feature/AmazingFeature`).
+5.  Abre un "Pull Request".
+
+## Contacto
+
+Cesar Manzo - tu-email@ejemplo.com - [Perfil de LinkedIn](https.linkedin.com/in/tu-perfil/)
