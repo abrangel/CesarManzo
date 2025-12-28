@@ -1,25 +1,40 @@
-# Portafolio de Cesar Manzo - Interfaz Bio-AI
+# Portafolio Interactivo de Cesar Manzo - RStudio Bio-AI
 
-¡Bienvenido al repositorio del portafolio de Cesar Manzo! Esta es una página web estática diseñada para mostrar las habilidades, proyectos y experiencia de Cesar en los campos de la bioinformática, la inteligencia artificial y la robótica.
+¡Bienvenido al repositorio del portafolio de Cesar Manzo! Este proyecto es una página web interactiva que simula una interfaz de RStudio para mostrar de forma creativa y técnica los conocimientos y proyectos de Cesar en Bioinformática e Inteligencia Artificial.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Descripción
 
-Este proyecto es una interfaz de usuario con un diseño futurista y temático de "Bio-AI", que funciona como un portafolio interactivo. La página está construida como una Single Page Application (SPA) para una navegación fluida e inmersiva.
+Este portafolio va más allá de una página estática tradicional. Se ha diseñado como una aplicación de una sola página (SPA) que replica el entorno de RStudio, ofreciendo una experiencia inmersiva y familiar para reclutadores y profesionales del sector de la bioinformática y la ciencia de datos.
 
 ### Características Principales
 
-- **Dashboard Interactivo**: Un panel lateral que muestra métricas y enlaces a redes sociales.
-- **Navegación Inmersiva**: Al hacer clic en los cursos del portafolio, se despliega una vista de pantalla completa con el temario detallado.
-- **Diseño Futurista**: Estilo visual inspirado en interfaces de alta tecnología, con animaciones y efectos de "glow".
-- **Responsive**: Adaptable a diferentes tamaños de pantalla, desde escritorio hasta dispositivos móviles.
+- **Interfaz tipo RStudio:** Un diseño profesional y oscuro que simula el popular IDE, con paneles para scripts, consola y visualizaciones.
+- **Navegación Interactiva por Temario:** Un panel lateral permite navegar por los diferentes temas de estudio del Máster en Bioinformática.
+- **Simulación de Código y Salida:** Al seleccionar un tema, se muestra un script de R simulado en el editor, junto con una salida de consola y una visualización de plots correspondientes, todo ello generado con HTML, CSS y JavaScript.
+- **Demostración de Proyectos en Python:** Dentro de la carpeta `proyectos` se incluye un script en Python (`analisis_exploratorio.py`) que realiza un análisis exploratorio de datos de expresión génica y genera un heatmap, demostrando así la capacidad de Cesar en el análisis de datos con Python.
+
+## Proyectos Destacados
+
+### Análisis Exploratorio de Datos con Python
+
+En la carpeta `proyectos` encontrarás un ejemplo práctico de análisis de datos:
+
+- **Script:** `analisis_exploratorio.py`
+- **Datos:** `gene_expression.csv`
+- **Dependencias:** `requirements.txt`
+
+Para ejecutar este análisis y generar el gráfico:
+1.  Navega a la carpeta `proyectos`.
+2.  Instala las dependencias: `pip install -r requirements.txt`
+3.  Ejecuta el script: `python analisis_exploratorio.py`
+
+Esto guardará un heatmap en la carpeta `assets/images`.
 
 ## Base de Conocimientos
 
-Aquí se detalla el conocimiento adquirido en los diferentes másteres cursados.
-
-### Máster en Bioinformática (Universidad Internacional de La Rioja - UNIR)
+La interfaz simula el temario del **Máster en Bioinformática (Universidad Internacional de La Rioja - UNIR)**. Los temas cubiertos incluyen:
 
 <details>
 <summary>Algoritmos e Inteligencia Artificial</summary>
@@ -89,12 +104,13 @@ Aquí se detalla el conocimiento adquirido en los diferentes másteres cursados.
 ## Tecnologías Utilizadas
 
 - **HTML5**
-- **CSS3**: Para los estilos, animaciones y el diseño responsive.
-- **JavaScript**: Para la interactividad, efectos de tipeo, y la lógica de la navegación inmersiva.
+- **CSS3**: Para los estilos y la simulación de la interfaz de RStudio.
+- **JavaScript (Vanilla)**: Para la interactividad, la carga dinámica de contenido y las simulaciones.
+- **Python**: Para el script de análisis de datos en la carpeta `proyectos`.
 
 ## Getting Started
 
-Para ver el proyecto en tu máquina local, sigue estos pasos:
+Para ver el proyecto en tu máquina local:
 
 1.  **Clona el repositorio**
     ```sh
@@ -106,16 +122,6 @@ Para ver el proyecto en tu máquina local, sigue estos pasos:
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Si tienes alguna sugerencia para mejorar el proyecto, por favor abre un "issue" o envía un "pull request".
-
-1.  Haz un "Fork" del proyecto.
-2.  Crea tu rama de funcionalidad (`git checkout -b feature/AmazingFeature`).
-3.  Haz "Commit" de tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4.  Haz "Push" a la rama (`git push origin feature/AmazingFeature`).
-5.  Abre un "Pull Request".
 
 ## Contacto
 

@@ -1,0 +1,117 @@
+/* --- CONFIGURACIÓN ESTÉTICA (Modo Oscuro Profesional) --- */
+        :root {
+            --bg-app: #1e212b; 
+            --bg-panel: #282c34; 
+            --border: #3b4048;
+            --text-main: #abb2bf;
+            --primary: #61afef; /* Azul RStudio */
+            --accent: #98c379;  /* Verde */
+            --keyword: #c678dd; /* Morado */
+            --string: #98c379;
+            --function: #e06c75; /* Rojo suave */
+            --comment: #5c6370;
+            --sidebar-w: 300px;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; background: var(--bg-app); font-family: 'Roboto', sans-serif; color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- 1. SIDEBAR (TEMARIO COMPLETO) --- */
+        .nav-sidebar {
+            width: var(--sidebar-w); background: #181a1f; border-right: 1px solid #000;
+            display: flex; flex-direction: column;
+        }
+        .nav-header { padding: 20px; border-bottom: 1px solid var(--border); }
+        .nav-header h2 { margin: 0; font-family: 'Orbitron'; font-size: 1.1rem; color: var(--primary); }
+        .nav-header span { font-size: 0.75rem; color: #5c6370; }
+        
+        .nav-items { overflow-y: auto; flex: 1; }
+        .nav-items::-webkit-scrollbar { width: 6px; }
+        .nav-items::-webkit-scrollbar-thumb { background: #3b4048; border-radius: 3px; }
+
+        .topic-btn {
+            display: block; width: 100%; padding: 12px 20px; text-align: left;
+            background: transparent; border: none; color: var(--text-main); cursor: pointer;
+            border-left: 3px solid transparent; transition: 0.2s; font-size: 0.85rem;
+            border-bottom: 1px solid #21252b; display: flex; align-items: center;
+        }
+        .topic-btn:hover { background: #2c313a; color: #fff; }
+        .topic-btn.active { background: #2c313a; border-left-color: var(--primary); color: var(--primary); font-weight: bold; }
+        .topic-btn i { width: 25px; margin-right: 10px; text-align: center; color: var(--accent); font-size: 1rem; }
+        .topic-btn small { display: block; font-size: 0.7rem; color: #5c6370; margin-left: 35px; margin-top: 2px; }
+
+        /* --- 2. ÁREA PRINCIPAL --- */
+        .main-stage { flex: 1; display: flex; flex-direction: column; padding: 5px; background: #3e4451; gap: 5px; }
+        
+        .rstudio-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 50% Código | 50% Plots */
+            grid-template-rows: 1fr;
+            gap: 5px;
+            height: 100%;
+        }
+
+        .panel { background: var(--bg-panel); border: 1px solid var(--border); display: flex; flex-direction: column; border-radius: 2px; overflow: hidden; }
+
+        /* --- EDITOR DE CÓDIGO --- */
+        .editor-header {
+            background: #21252b; padding: 5px 10px; font-size: 0.8rem; display: flex; gap: 5px; border-bottom: 1px solid var(--border);
+        }
+        .tab { background: #282c34; padding: 4px 12px; border-radius: 4px 4px 0 0; border-top: 2px solid var(--primary); color: #fff; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;}
+        
+        .code-container {
+            flex: 1; padding: 15px; overflow-y: auto; font-family: 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.6;
+            background: #282c34; color: #abb2bf;
+        }
+        /* Sintaxis R */
+        .c-com { color: var(--comment); font-style: italic; }
+        .c-kwd { color: var(--keyword); }
+        .c-func { color: var(--primary); }
+        .c-str { color: var(--string); }
+        .c-num { color: #d19a66; }
+        .c-args { color: #d19a66; }
+        .c-op { color: #56b6c2; }
+
+        /* --- CONSOLA --- */
+        .console-divider {
+            height: 25px; background: #21252b; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 10px; font-size: 0.75rem; color: #9da5b4;
+        }
+        .console-output {
+            height: 30%; overflow-y: auto; background: #21252b; color: #abb2bf; padding: 10px; font-family: 'Fira Code', monospace; font-size: 0.85rem; border-top: 1px solid #333;
+        }
+
+        /* --- VISOR DE PLOTS --- */
+        .plot-tabs { background: #f0f0f0; border-bottom: 1px solid #ccc; padding: 2px 8px; display: flex; gap: 2px; height: 28px; }
+        .pt-tab { padding: 4px 10px; font-size: 0.75rem; color: #333; cursor: pointer; border: 1px solid transparent; border-radius: 3px 3px 0 0; }
+        .pt-tab.active { background: #fff; border-color: #ccc #ccc #fff #ccc; font-weight: 600; }
+        
+        .plot-toolbar { background: #fff; padding: 4px 10px; border-bottom: 1px solid #eee; display: flex; gap: 15px; font-size: 0.8rem; color: #444; }
+        
+        .plot-area {
+            flex: 1; background: #fff; padding: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; position: relative; overflow: hidden;
+        }
+
+        /* --- ELEMENTOS GRÁFICOS SIMULADOS --- */
+        .chart-title { font-weight: bold; font-size: 1rem; margin-bottom: 15px; color: #333; text-align: center; }
+        .axis-label { font-size: 0.75rem; color: #666; position: absolute; }
+        
+        /* Scatter / PCA / t-SNE Box */
+        .scatter-box { width: 300px; height: 250px; border-left: 2px solid #333; border-bottom: 2px solid #333; position: relative; }
+        .dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; opacity: 0.7; transition: all 0.5s; }
+        
+        /* Dendrograma Simulado */
+        .dendro-box { width: 300px; height: 200px; position: relative; border-bottom: 1px solid #ccc; }
+        .dendro-line { position: absolute; border: 1px solid #333; }
+        
+        /* Bar Chart */
+        .bar-chart { width: 90%; display: flex; flex-direction: column; gap: 8px; }
+        .bar-row { display: flex; align-items: center; gap: 10px; }
+        .bar-label { width: 120px; text-align: right; font-size: 0.75rem; color: #333; font-weight: 500;}
+        .bar-track { flex: 1; background: #eee; height: 10px; border-radius: 2px; }
+        .bar-fill { height: 100%; background: #4682b4; }
+
+        /* Decision Tree Simulado */
+        .tree-node { width: 80px; padding: 5px; border: 1px solid #333; background: #fff; text-align: center; font-size: 0.7rem; position: absolute; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
+        .tree-line { position: absolute; background: #333; width: 1px; }
