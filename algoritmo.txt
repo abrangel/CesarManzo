@@ -1,0 +1,96 @@
+Tema 1. Introducción a la Inteligencia Artificial (IA)
+Este tema sienta las bases conceptuales. La IA busca desarrollar sistemas que realicen tareas que requieren inteligencia humana.
+• Aprendizaje Automático (Machine Learning - ML): Algoritmos que mejoran su rendimiento a medida que se exponen a más datos.
+• Aprendizaje Profundo (Deep Learning - DL): Rama del ML que utiliza redes neuronales artificiales con múltiples capas (entrada, ocultas y salida).
+• Tipos de ML:
+    ◦ Supervisado: Usa datos etiquetados (ej. clasificación y regresión).
+    ◦ No supervisado: Busca patrones en datos sin etiquetar (ej. reducción de dimensionalidad y clusterización).
+    ◦ Semisupervisado: Combina datos etiquetados y no etiquetados.
+    ◦ Refuerzo: El modelo aprende mediante recompensas al interactuar con un ambiente.
+• Preprocesamiento de datos: Incluye limpieza (corregir errores), transformación (normalización) y reducción (eliminar variables redundantes).
+Tema 2. Métodos No Supervisados: Reducción de Dimensionalidad I
+Sirven para transformar datos de alta dimensionalidad en un espacio menor, manteniendo la información relevante.
+• Principal Component Analysis (PCA): Técnica lineal que busca maximizar la varianza de los datos mediante combinaciones lineales (componentes principales).
+    ◦ Comando R: prcomp(data, center = TRUE, scale = FALSE).
+    ◦ Uso: Útil cuando las variables tienen altas correlaciones.
+• Multidimensional Scaling (MDS): Visualiza la similitud o distancia entre muestras. Los objetos más similares están más cerca en el gráfico.
+    ◦ Comando R: cmdscale(dist_matrix, eig = TRUE) (donde dist_matrix se obtiene con dist(data, method = "euclidean")).
+• Isometric Mapping (Isomap): Método no lineal que busca preservar la distancia geodésica (línea de mínima longitud sobre una superficie curva).
+    ◦ Comando R: Isomap(data, dims = 1:10, k = 5) (paquete RDRToolbox).
+• t-SNE: Técnica no lineal ideal para visualización. Convierte distancias en probabilidades condicionales.
+    ◦ Comando R: Rtsne(as.matrix(data)) (paquete Rtsne).
+Tema 3. Métodos No Supervisados: Reducción de Dimensionalidad II
+Continuación de técnicas para datos complejos y no lineales.
+• Locally Linear Embedding (LLE): Mantiene las relaciones de vecindad local al proyectar los datos a menor dimensión.
+    ◦ Comando R: LLE(data, dim = 2, k = 130) (paquete RDRToolbox).
+• Laplacian Eigenmap (LE): Usa vectores propios para preservar la geometría local del conjunto de datos.
+    ◦ Comando R: do.lapeig(data, type = c("proportion", 0.2)) (paquete Rdimtools).
+• Maximum Variance Unfolding (MVU): Genera un kernel óptimo maximizando la varianza mientras preserva distancias y ángulos locales.
+    ◦ Comando R: do.mvu(data, ndim = 2, type = c("proportion", 0.1)) (paquete Rdimtools).
+• UMAP: Basado en geometría topológica. Es muy eficaz y versátil para manejar grandes conjuntos de datos.
+    ◦ Comando R: umap(data, n_neighbors = 15, n_components = 2) (paquete uwot).
+• Independent Component Analysis (ICA): Técnica para reducir el ruido separando datos en componentes estadísticamente independientes.
+    ◦ Comando R: ica(data, nc = 3) (paquete ica).
+Tema 4. Clusterización (Aprendizaje No Supervisado)
+Agrupa muestras heterogéneas en subgrupos (clústeres) similares entre sí y diferentes del resto.
+• K-means (No jerárquica): Divide los datos en k grupos definidos por centroides (puntos medios).
+    ◦ Comando R: kmeans(data, centers = 3, nstart = 25).
+    ◦ Número óptimo de clústeres: Se usa la "regla del codo" analizando la suma total del error dentro del clúster (wss). Comando: fviz_nbclust(data, kmeans, method = "wss").
+• Clusterización Jerárquica Aglomerativa: Enfoque bottom-up (de abajo hacia arriba) donde cada dato empieza como un clúster y se fusionan.
+    ◦ Comando R: hclust(dist_matrix, method = 'ward.D').
+    ◦ Métodos de enlace (Linkage): single, complete, average y ward (este último minimiza la varianza total dentro de los clústeres).
+• Clusterización Jerárquica Divisiva: Enfoque top-down (de arriba hacia abajo). Comienza con un solo grupo y lo divide recursivamente.
+    ◦ Comando R: diana(data) (paquete cluster).
+• Visualización: Se utilizan dendrogramas (fviz_dend) y mapas de calor (heatmaps).
+Tema 5. Análisis Discriminante (Aprendizaje Supervisado)
+Busca relaciones lineales entre variables continuas para clasificar observaciones en grupos predefinidos.
+• Linear Discriminant Analysis (LDA): Clasificador lineal que asume distribución normal y varianzas iguales entre grupos.
+    ◦ Comando R: lda(Species ~ ., data = training_data) (paquete MASS).
+• Quadratic Discriminant Analysis (QDA): Más flexible que LDA; permite que cada grupo tenga su propia matriz de covarianza.
+    ◦ Comando R: qda(Species ~ ., data = training_data) (paquete MASS).
+• Evaluación del modelo: Se realiza mediante la matriz de confusión para medir la precisión (accuracy), sensibilidad y especificidad.
+    ◦ Comando R: confusionMatrix(predicciones, clases_reales) (paquete caret).
+
+Tema 5. Análisis Discriminante (Continuación)
+• 5.4 Regularized Discriminant Analysis (RDA):
+    ◦ Concepto: Es una extensión del LDA que introduce una penalización a la matriz de covarianza para evitar el sobreajuste (overfitting). Es ideal para datos de alta dimensión donde hay más predictores que muestras y existe una alta correlación entre variables.
+    ◦ Comando R: rda(Species ~ ., data = train_data) del paquete klaR.
+• 5.5 Flexible Discriminant Analysis (FDA):
+    ◦ Concepto: Versión no paramétrica del análisis discriminante que sustituye la regresión lineal por métodos más flexibles como los splines. No asume una distribución específica (como la normalidad) pero requiere datos estandarizados.
+    ◦ Comando R: fda(Species ~ ., data = train_data, method = bruto) del paquete mda.
+
+--------------------------------------------------------------------------------
+Tema 6. Otros Métodos de Aprendizaje Supervisado I
+Este bloque se enfoca en clasificadores que aprenden patrones complejos para asignar etiquetas a nuevos datos.
+• 6.2 k-Nearest Neighbors (k-NN):
+    ◦ Concepto: Algoritmo de "aprendizaje vago" (lazy learner) que no construye un modelo previo; clasifica un nuevo punto basándose en la clase mayoritaria de sus k vecinos más cercanos.
+    ◦ Comando R: train(Species ~ ., data = trainData, method = "knn", preProcess = c("center", "scale")).
+    ◦ Parámetro clave: k. Un k pequeño puede causar sobreajuste; un k grande, infraajuste. Es vital normalizar/escalar los datos antes de aplicarlo.
+• 6.3 Support Vector Machine (SVM) Lineal:
+    ◦ Concepto: Busca el hiperplano óptimo que separa las clases en un espacio dimensional, maximizando el margen entre los puntos llamados "vectores de soporte".
+    ◦ Comando R: svm(Species ~ ., data = trainData, kernel = "linear") del paquete e1071.
+    ◦ Hiperparámetro: C (coste), controla la penalización por errores de clasificación.
+• 6.4 Support Vector Machine tipo Kernel (No Lineal):
+    ◦ Concepto: Utiliza funciones Kernel (como el radial/gaussiano) para mapear datos a espacios de mayor dimensión donde sí es posible una separación lineal.
+    ◦ Comando R: svm(Species ~ ., data = trainData, kernel = "radial").
+    ◦ Parámetros: C y σ (sigma).
+• 6.5 Decision Tree (DT):
+    ◦ Concepto: Estructura de árbol donde los nodos internos representan preguntas sobre los atributos y las hojas representan la clasificación final. Son muy interpretables pero propensos al sobreajuste.
+    ◦ Comando R: rpart(Survived ~ ., data = train_data, method = "class"). Para visualizar: rpart.plot(model).
+    ◦ Parámetro clave: CP (parámetro de complejidad).
+
+--------------------------------------------------------------------------------
+Tema 7. Otros Métodos de Aprendizaje Supervisado II
+Se centra en métodos de "ensamblado" que combinan varios modelos para mayor robustez.
+• 7.2 Agregación bootstrap (Bagging):
+    ◦ Concepto: Entrena múltiples modelos de forma paralela con muestras aleatorias de los datos (con reemplazo) y promedia sus resultados para reducir la varianza.
+    ◦ Ejemplo: Random Forest (RF): Crea un bosque de múltiples árboles de decisión independientes.
+    ◦ Comando R: randomForest(Species ~ ., data = trainData, ntree = 100).
+• 7.3 Naive Bayes:
+    ◦ Concepto: Clasificador probabilístico basado en el Teorema de Bayes que asume independencia entre las variables predictoras (de ahí lo de "ingenuo"). Es muy rápido y eficiente con grandes volúmenes de datos.
+    ◦ Comando R: naiveBayes(Species ~ ., data = train_data) del paquete e1071.
+• 7.4 Gradient Boosting Machines (GBM):
+    ◦ Concepto: Construye modelos débiles (árboles sencillos) de forma secuencial, donde cada nuevo modelo intenta corregir los errores del anterior utilizando gradientes.
+    ◦ Comando R: gbm(formula, data = train_data, distribution = "bernoulli").
+    ◦ Parámetros clave: n.trees (iteraciones), shrinkage (tasa de aprendizaje) y interaction.depth.
+

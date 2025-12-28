@@ -1,0 +1,235 @@
+---
+title: "Actividad 1: Aplicación de técnicas de aprendizaje no supervisado"
+author: "Cesar Abrahan Manzo Carvajal"
+date: "11/12/2025"
+output:
+  html_document:
+    toc: yes
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Introducción
+
+El objetivo de esta actividad es aplicar, comparar y evaluar cuatro técnicas de aprendizaje no supervisado para la reducción de dimensionalidad sobre un conjunto de datos de expresión génica (RNA-seq) de distintos tipos de cáncer. El fin último es determinar qué método permite visualizar y agrupar mejor los datos según el tipo de tumor, revelando patrones biológicos subyacentes.
+
+Los métodos seleccionados son:
+
+1.  **Análisis de Componentes Principales (PCA)**: Un método lineal fundamental.
+2.  **t-Distributed Stochastic Neighbor Embedding (t-SNE)**: Un método no lineal popular para visualización.
+3.  **Uniform Manifold Approximation and Projection (UMAP)**: Una alternativa moderna y eficiente a t-SNE.
+4.  **Isomap**: Un método clásico de aprendizaje de variedades (manifold learning).
+
+## 1. Ambiente y librerías de trabajo
+
+Para llevar a cabo el análisis, se han utilizado las siguientes librerías en R:
+
+*   **`ggplot2`**: Esencial para la creación de gráficos de alta calidad. Se utiliza para visualizar los resultados de los algoritmos de reducción de dimensionalidad, asignando colores a los diferentes tipos de cáncer para evaluar visualmente la calidad de la agrupación.
+*   **`Rtsne`**: Proporciona la implementación en R del algoritmo t-SNE. Se usará la función `Rtsne()`.
+*   **`umap`**: Contiene la implementación del algoritmo UMAP. La función principal es `umap()`.
+*   **`vegan`**: Es una de las librerías que implementa Isomap. Se usará la función `isomap()`.
+*   **`dplyr`**: Útil para la manipulación de datos, como la unión de los resultados de la reducción con las etiquetas originales.
+
+A continuación, se explican los argumentos más importantes de las funciones utilizadas:
+
+*   **`prcomp(x, scale. = TRUE)`**:
+    *   `x`: La matriz de datos numéricos.
+    *   `scale.`: Un valor lógico que indica si las variables deben ser escaladas a una varianza unitaria antes del análisis. Es fundamental para PCA cuando las variables tienen escalas muy diferentes, como en los datos de expresión génica.
+
+*   **`Rtsne(X, dims = 2, perplexity = 30)`**:
+    *   `X`: La matriz de datos.
+    *   `dims`: El número de dimensiones de salida (en nuestro caso, 2).
+    *   `perplexity`: Relacionado con el número de vecinos cercanos que se consideran para cada punto. Es un parámetro crucial que puede afectar significativamente el resultado. Un valor típico está entre 5 y 50.
+
+*   **`umap(d, n_neighbors = 15, n_components = 2)`**:
+    *   `d`: La matriz de datos.
+    *   `n_neighbors`: El número de vecinos que se usarán para construir el grafo de similitud. Controla el balance entre la estructura local y global.
+    *   `n_components`: El número de dimensiones de salida (2 para nuestra visualización).
+
+*   **`isomap(dist, k)`**:
+    *   `dist`: Una matriz de distancias precalculada (usaremos `dist()`).
+    *   `k`: El número de vecinos más cercanos para construir el grafo de vecindad sobre el cual se calculan las distancias geodésicas.
+
+## 2. Procesamiento de los datos
+
+Se identificaron los siguientes problemas y se aplicaron las soluciones correspondientes:
+
+1.  **Tamaño del archivo**: El archivo `data.csv` original es muy grande (aprox. 200 MB), lo que puede hacer que los cálculos sean muy lentos en un ordenador personal.
+    *   **Solución**: Se utilizó el archivo `datos_500.csv`, una versión reducida del conjunto de datos que es computacionalmente más manejable.
+
+2.  **Formato de los datos**: El conjunto de datos (`datos_500.csv`) tiene las muestras en las filas y los genes en las columnas. La primera columna contiene un identificador numérico que no es un dato de expresión.
+    *   **Solución**: Se leyó el archivo y se asignó la primera columna como nombres de fila (identificadores de muestra), eliminándola del conjunto de datos numéricos para que no interfiera en los cálculos.
+
+3.  **Genes con Varianza Cero**: Se detectó que algunos genes tienen el mismo valor de expresión en todas las muestras (varianza cero).
+    *   **Solución**: Estos genes no aportan información para la clasificación y causan errores en funciones como `prcomp`. Se identificaron y eliminaron del conjunto de datos antes de proceder con la estandarización.
+
+4.  **Escala de los datos**: Los niveles de expresión de diferentes genes pueden variar en órdenes de magnitud. Métodos sensibles a la varianza como PCA se ven muy afectados por esto, dando más peso a los genes con mayor varianza.
+    *   **Solución**: Se estandarizaron los datos, de modo que cada gen (columna) tenga una media de 0 y una desviación estándar de 1. Esto se hizo con la función `scale()`.
+
+5.  **Correspondencia de etiquetas**: El archivo de etiquetas `labels.csv` no tiene los mismos identificadores que el de datos.
+    *   **Solución**: Se asumió que el orden de las muestras es el mismo en ambos archivos. Se cargaron las etiquetas y se combinaron con los datos por su orden de aparición.
+
+A continuación, el código de preparación de datos:
+
+```{r data_processing}
+# Cargar las librerías necesarias
+library(ggplot2)
+library(Rtsne)
+library(umap)
+library(vegan)
+library(dplyr)
+
+# Definir las rutas a los archivos
+data_path <- "C:/Users/carva/Downloads/course_files_export/PER_13711/data/rna_cancer/datos_500.csv"
+labels_path <- "C:/Users/carva/Downloads/course_files_export/PER_13711/data/rna_cancer/labels.csv"
+
+# Cargar los datos y las etiquetas
+data <- read.csv(data_path)
+labels <- read.csv(labels_path)
+
+# Procesamiento de datos
+# Usar la primera columna como nombres de fila y eliminarla
+rownames(data) <- data[,1]
+data <- data[,-1]
+
+# Procesamiento de etiquetas
+# Asumir que el orden es el mismo y tomar solo la columna de clases
+cancer_labels <- labels$Class
+
+# --- CORRECCIÓN: Eliminar columnas con varianza cero ---
+# Identificar columnas con varianza cero (constantes en todas las muestras)
+zero_var_cols <- which(apply(data, 2, var) == 0)
+if (length(zero_var_cols) > 0) {
+  cat("Se eliminaron", length(zero_var_cols), "columnas con varianza cero.\n")
+  data <- data[, -zero_var_cols]
+}
+
+# Estandarizar los datos (muy importante para PCA y otros métodos basados en distancia)
+data_scaled <- scale(data)
+
+# Comprobar si hay valores NA después de escalar (esto ya no debería ocurrir,
+# pero es una buena práctica) y reemplazarlos por 0.
+data_scaled[is.na(data_scaled)] <- 0
+```
+
+## 3. Métodos no supervisados
+
+### Motivo de la selección de técnicas
+
+Se seleccionaron estas cuatro técnicas para tener una visión comparativa de diferentes enfoques:
+
+*   **PCA**: Es el punto de partida más común. Al ser un método lineal, sirve como una línea base para comparar con métodos más complejos. Es rápido e interpretable, pero puede no capturar estructuras no lineales en los datos.
+*   **Isomap**: Representa a los métodos clásicos de "manifold learning". Intenta preservar las distancias geodésicas entre puntos, lo que puede "desdoblar" variedades no lineales en los datos, pero es sensible a "agujeros" en la distribución de los datos.
+*   **t-SNE**: Es una técnica muy potente para la visualización de datos de alta dimensionalidad. Su principal fortaleza es su capacidad para revelar la estructura local y separar clústeres muy bien definidos. Su principal debilidad es que no preserva bien la estructura global.
+*   **UMAP**: Es un método más reciente que a menudo se considera el sucesor de t-SNE. Generalmente es más rápido y, lo que es más importante, tiende a preservar mejor la estructura global de los datos en comparación con t-SNE, ofreciendo a menudo una mejor separación de clústeres.
+
+### Aspectos positivos y negativos
+
+| Técnica | Aspectos Positivos                                                              | Aspectos Negativos                                                                      |
+| :-------- | :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| **PCA**   | Rápido, determinista, interpretable (cargas de las variables).                  | Lineal, puede no capturar relaciones complejas. Sensible a la escala de los datos.      |
+| **Isomap**| Captura la estructura no lineal de variedades. Intuitivo.                       | Computacionalmente costoso. Sensible al parámetro `k` y a datos ruidosos o dispersos. |
+| **t-SNE** | Excelente para visualizar clústeres locales bien definidos.                     | No preserva la estructura global. Estocástico (resultados varían). Lento en datasets grandes. |
+| **UMAP**  | Rápido, preserva un buen equilibrio entre estructura local y global.            | Los parámetros (como `n_neighbors`) aún requieren ajuste. Menos interpretable que PCA. |
+
+### Implementación y resultados gráficos
+
+#### 1. Análisis de Componentes Principales (PCA)
+
+```{r pca_analysis}
+# Realizar PCA
+pca_result <- prcomp(data_scaled)
+
+# Convertir a data frame para ggplot
+pca_df <- as.data.frame(pca_result$x)
+pca_df$cancer_type <- cancer_labels
+
+# Graficar los dos primeros componentes
+ggplot(pca_df, aes(x = PC1, y = PC2, color = cancer_type)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "PCA de datos de RNA-seq",
+       x = paste("PC1 (", round(summary(pca_result)$importance[2,1]*100, 2), "%)", sep=""),
+       y = paste("PC2 (", round(summary(pca_result)$importance[2,2]*100, 2), "%)", sep=""),
+       color = "Tipo de Cáncer") +
+  theme_minimal()
+```
+
+**Observación**: PCA muestra cierta separación entre los tipos de cáncer, pero hay una superposición considerable. Los clústeres no están claramente definidos, lo que sugiere que las principales fuentes de variación (PC1 y PC2) no son suficientes para separar completamente los tumores o que las relaciones no son puramente lineales. Biológicamente, esto es esperado, ya que aunque los tipos de cáncer son distintos, pueden compartir muchas vías moleculares alteradas.
+
+#### 2. Isomap
+
+```{r isomap_analysis}
+# Isomap requiere una matriz de distancias
+data_dist <- dist(data_scaled)
+isomap_result <- isomap(data_dist, k = 5)
+
+# Convertir a data frame
+isomap_df <- as.data.frame(isomap_result$points)
+# --- CORRECCIÓN: Asignar nombres de columna explícitamente ---
+colnames(isomap_df)[1:2] <- c("V1", "V2")
+isomap_df$cancer_type <- cancer_labels
+
+# Graficar
+ggplot(isomap_df, aes(x = V1, y = V2, color = cancer_type)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "Isomap (k=5) de datos de RNA-seq",
+       x = "Dimensión 1", y = "Dimensión 2", color = "Tipo de Cáncer") +
+  theme_minimal()
+```
+
+**Observación**: Isomap parece mejorar la separación en comparación con PCA. Se observan agrupaciones más definidas, aunque todavía con algo de solapamiento. La elección de `k` (el número de vecinos) es crítica y podría afinarse para mejorar el resultado. El resultado sugiere que hay una estructura no lineal en los datos que Isomap es capaz de capturar parcialmente.
+
+#### 3. t-SNE
+
+```{r tsne_analysis}
+# Ejecutar t-SNE. Es estocástico, fijamos una semilla para reproducibilidad.
+set.seed(42)
+tsne_result <- Rtsne(data_scaled, perplexity = 30, check_duplicates = FALSE)
+
+# Convertir a data frame
+tsne_df <- as.data.frame(tsne_result$Y)
+tsne_df$cancer_type <- cancer_labels
+
+# Graficar
+ggplot(tsne_df, aes(x = V1, y = V2, color = cancer_type)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "t-SNE (perplexity=30) de datos de RNA-seq",
+       x = "t-SNE Dimensión 1", y = "t-SNE Dimensión 2", color = "Tipo de Cáncer") +
+  theme_minimal()
+```
+
+**Observación**: t-SNE muestra un resultado excelente. Los tipos de cáncer forman clústeres muy compactos y bien separados. Esto demuestra su gran capacidad para encontrar la estructura local en los datos. Biológicamente, tiene mucho sentido: las muestras del mismo tipo de cáncer tienen perfiles de expresión génica muy similares entre sí, y t-SNE es experto en agrupar estos "vecindarios" locales. La separación clara indica que las firmas moleculares de cada tipo de cáncer son lo suficientemente distintas como para ser detectadas.
+
+#### 4. UMAP
+
+```{r umap_analysis}
+# Ejecutar UMAP. También es estocástico.
+set.seed(42)
+umap_result <- umap(data_scaled, n_neighbors = 15)
+
+# Convertir a data frame
+umap_df <- as.data.frame(umap_result$layout)
+umap_df$cancer_type <- cancer_labels
+
+# Graficar
+ggplot(umap_df, aes(x = V1, y = V2, color = cancer_type)) +
+  geom_point(alpha = 0.7) +
+  labs(title = "UMAP (n_neighbors=15) de datos de RNA-seq",
+       x = "UMAP Dimensión 1", y = "UMAP Dimensión 2", color = "Tipo de Cáncer") +
+  theme_minimal()
+```
+
+**Observación**: UMAP, al igual que t-SNE, logra una separación excepcional de los clústeres. Los grupos son densos y están muy bien definidos. Algunos argumentarían que UMAP preserva mejor la estructura global, lo que significa que la distancia entre los clústeres en el gráfico podría tener más significado que en t-SNE. El resultado confirma que los perfiles de expresión son marcadores muy potentes para distinguir tipos de tumores.
+
+## Conclusión y Selección del Algoritmo más Eficiente
+
+Comparando los cuatro métodos, **t-SNE y UMAP son claramente los más eficientes** para esta tarea de visualización y agrupación. Ambos logran separar los tipos de cáncer en clústeres distintos y compactos, lo que refleja con precisión las diferencias biológicas subyacentes.
+
+*   **Selección final**: Si bien ambos son excelentes, **UMAP** podría considerarse ligeramente superior por dos razones:
+    1.  **Velocidad**: Generalmente es más rápido que t-SNE, una ventaja importante con datasets más grandes.
+    2.  **Preservación de la estructura global**: UMAP tiende a representar mejor las relaciones entre clústeres, no solo dentro de ellos.
+
+PCA e Isomap, aunque útiles, no lograron el mismo nivel de separación, lo que indica que los patrones que distinguen estos tipos de cáncer son fundamentalmente no lineales y complejos, algo que t-SNE y UMAP están diseñados para encontrar.
