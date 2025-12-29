@@ -250,6 +250,25 @@
 
         /* --- ESTILOS LABORATORIO BIO-COMPUTACIONAL (Auto-Animado) --- */
         #bio-lab { position: relative; overflow: hidden; }
+
+        @keyframes text-flicker-fast {
+            0% { opacity: 1; text-shadow: 0 0 4px currentColor; }
+            20% { opacity: 0.8; text-shadow: 0 0 8px currentColor; }
+            22% { opacity: 1; text-shadow: 0 0 4px currentColor; }
+            40% { opacity: 0.7; }
+            42% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+        .lab-value-flicker {
+            animation: text-flicker-fast 1.5s infinite;
+        }
+        @keyframes line-flow {
+            to { stroke-dashoffset: -100; }
+        }
+        .data-flow-animated {
+            stroke-dasharray: 10 5;
+            animation: line-flow 2s linear infinite;
+        }
         .lab-interface { background: rgba(2, 6, 12, 0.95); border: 1px solid var(--primary-glow); box-shadow: 0 0 30px rgba(0, 255, 255, 0.05), inset 0 0 20px rgba(0, 255, 255, 0.05); border-radius: 8px; height: 600px; display: flex; flex-direction: column; margin-top: 20px; backdrop-filter: blur(10px); }
         .lab-tabs { display: flex; background: rgba(0, 0, 0, 0.6); border-bottom: 1px solid rgba(0, 255, 255, 0.3); }
         .lab-tab { flex: 1; padding: 15px; text-align: center; font-family: 'Orbitron', sans-serif; color: var(--text-muted); cursor: pointer; transition: all 0.3s ease; border-bottom: 2px solid transparent; font-size: 0.9rem; letter-spacing: 1px; }
@@ -397,7 +416,7 @@
                         <h4>Máster en Bioinformática</h4>
                         <span class="portfolio-institution">Universidad Internacional de La Rioja (UNIR)</span>
                         <div class="course-grid">
-                            <a href="demo.html" target="_blank" class="course-card"> <h5>Algoritmos e Inteligencia Artificial</h5> <span class="view-content-btn">Ver Temario &gt;</span> </a>
+                            <div class="course-card" data-modal-target="#modal-ia"> <h5>Algoritmos e Inteligencia Artificial</h5> <span class="view-content-btn">Ver Temario ></span> </div>
                             <div class="course-card" data-modal-target="#modal-prog"> <h5>Programación Científica y Linux</h5> <span class="view-content-btn">Ver Temario &gt;</span> </div>
                             <div class="course-card" data-modal-target="#modal-stats"> <h5>Estadística y R</h5> <span class="view-content-btn">Ver Temario &gt;</span> </div>
                             <div class="course-card" data-modal-target="#modal-ngs"> <h5>Secuenciación y Ómicas (NGS)</h5> <span class="view-content-btn">Ver Temario &gt;</span> </div>
@@ -426,7 +445,7 @@
         <footer> [SYSTEM://CONEXIÓN_CÓDIGO_VIDA] | &copy; 2025 Cesar Manzo | <a href="https://github.com/abrangel" target="_blank">[REPOSITORIO_GHC]</a> </footer>
     </div>
 
-
+    <div class="modal-overlay" id="modal-ia"> <div class="modal-content"> <button class="modal-close" aria-label="Cerrar ventana">&times;</button> <h4>Algoritmos e Inteligencia Artificial</h4> <span class="modal-institution">Máster en Bioinformática (UNIR)</span> <div class="modal-topics"> <details class="topic-details"> <summary class="topic-summary">Tema 1. Introducción a la IA</summary> <div class="topic-content"><p>Aprendizaje Automático y Profundo.</p></div> </details> </div> </div> </div>
     <div id="nav-overlay"> <button id="close-menu" aria-label="Close navigation">&times;</button> <a href="#about">SOBRE MÍ</a> <a href="#tools">ARSENAL</a> <a href="#portfolio">PORTAFOLIO</a> <a href="#bio-lab">LABORATORIO</a> <a href="#projects">PROYECTOS</a> </div>
     
     <div class="hologram-layer"> <div class="hologram holo-1"> <svg viewBox="0 0 100 200" fill="none" stroke="currentColor" stroke-width="1.5"> <path d="M40 10 C60 30, 60 50, 40 70 S 20 90, 40 110" stroke-width="2"/> </svg> </div> </div>
@@ -439,7 +458,7 @@
 
         // --- Typing Effect ---
         function typeEffect(element, text, speed) { let i = 0; element.innerHTML = ""; element.classList.add('typing'); let interval = setInterval(() => { if (i < text.length) { element.innerHTML += text.charAt(i); i++; } else { clearInterval(interval); element.classList.remove('typing'); } }, speed); }
-        window.addEventListener('load', () => { setTimeout(() => { typeEffect(document.getElementById('hero-title'), "CESAR MANZO", 150); setTimeout(() => typeEffect(document.getElementById('hero-subtitle'), "Navegando la Sinergia de Bioinformática, IA y Robótica.", 30), 1000); fetchGitHubRepos(); setTimeout(LabController.start, 1000); }, 500); });
+        window.addEventListener('load', () => { setTimeout(() => { typeEffect(document.getElementById('hero-title'), "CESAR MANZO", 150); setTimeout(() => typeEffect(document.getElementById('hero-subtitle'), "Navegando la Sinergia de Bioinformática, IA y Robótica.", 30), 1000); fetchGitHubRepos(); LabController.start(); }, 500); });
 
         // --- Scroll Reveal ---
         const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('is-visible'); }); }); document.querySelectorAll('.content-section').forEach(section => observer.observe(section));
@@ -447,51 +466,249 @@
         // --- GitHub API ---
         async function fetchGitHubRepos() { const username = 'abrangel'; const container = document.getElementById('github-repos'); try { const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`); const repos = await res.json(); container.innerHTML = ''; repos.forEach(repo => { container.innerHTML += `<div class="repo-card" onclick="window.open('${repo.html_url}')"><h4>${repo.name}</h4><p>${repo.description || 'Proyecto Bio-AI'}</p></div>`; }); } catch (e) { container.innerHTML = '<p>GitHub API Limit reached.</p>'; } }
 
-        // --- Menu Logic ---
-        const menuToggle = document.getElementById('menu-toggle'); const navOverlay = document.getElementById('nav-overlay'); const closeMenu = document.getElementById('close-menu');
-        menuToggle.addEventListener('click', () => { navOverlay.classList.add('open'); document.body.classList.add('menu-open'); });
-        closeMenu.addEventListener('click', () => { navOverlay.classList.remove('open'); document.body.classList.remove('menu-open'); });
-        document.querySelectorAll('#nav-overlay a').forEach(a => a.addEventListener('click', () => { navOverlay.classList.remove('open'); document.body.classList.remove('menu-open'); }));
+        // ******** CÓDIGO PARA EL MENÚ OVERLAY CORREGIDO ********
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const navOverlay = document.getElementById('nav-overlay');
+            const closeMenuButton = document.getElementById('close-menu');
+            const body = document.body;
+
+            function closeMenu() {
+                if (navOverlay.classList.contains('open')) {
+                    navOverlay.classList.remove('open');
+                    menuToggle.classList.remove('active');
+                    if (document.querySelectorAll('.modal-overlay.open, #immersive-overlay.open').length === 0) {
+                        body.classList.remove('menu-open');
+                    }
+                }
+            }
+            function openMenu() {
+                if (!navOverlay.classList.contains('open')) {
+                    navOverlay.classList.add('open');
+                    menuToggle.classList.add('active');
+                    body.classList.add('menu-open');
+                }
+            }
+
+            if (menuToggle && navOverlay && closeMenuButton) {
+                menuToggle.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    if (navOverlay.classList.contains('open')) {
+                        closeMenu();
+                    } else {
+                        openMenu();
+                    }
+                });
+                closeMenuButton.addEventListener('click', (event) => {
+                     event.stopPropagation();
+                     closeMenu();
+                });
+                navOverlay.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', closeMenu);
+                });
+                navOverlay.addEventListener('click', (event) => {
+                    if (event.target === navOverlay) {
+                        closeMenu();
+                    }
+                });
+            }
+        });
+        
+        // --- (ACTUALIZADO) CÓDIGO PARA MODALES Y NAVEGACIÓN INMERSIVA ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const courseCards = document.querySelectorAll('.course-card');
+            const immersiveOverlay = document.getElementById('immersive-overlay');
+            const immersiveCloseBtn = document.getElementById('immersive-close-btn');
+            const body = document.body;
+
+            const courseTitleEl = document.getElementById('immersive-course-title');
+            const courseInstitutionEl = document.getElementById('immersive-course-institution');
+            const temarioListEl = document.getElementById('immersive-temario-list');
+            const contentDisplayEl = document.getElementById('immersive-content-display');
+
+            const demoOverlay = document.getElementById('demo-overlay');
+            const demoIframe = document.getElementById('demo-iframe');
+            const closeDemoOverlayBtn = document.getElementById('close-demo-overlay');
+
+            if (closeDemoOverlayBtn) {
+                closeDemoOverlayBtn.addEventListener('click', () => {
+                    demoOverlay.style.display = 'none';
+                    demoIframe.src = 'about:blank'; // Stop content in iframe
+                });
+            }
+
+            courseCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const targetModalSelector = card.dataset.modalTarget;
+
+                    // Special handling for the "Algoritmos" card to load demo.html
+                    if (targetModalSelector === '#modal-ia') {
+                        if (demoOverlay && demoIframe) {
+                            demoIframe.src = 'demo.html';
+                            demoOverlay.style.display = 'block';
+                        }
+                    } else {
+                        // Original behavior for all other cards
+                        const sourceModal = document.querySelector(targetModalSelector);
+                        if (sourceModal) {
+                            openImmersiveView(sourceModal);
+                        }
+                    }
+                });
+            });
+
+            function openImmersiveView(source) {
+                // 1. Extraer datos del modal original
+                const title = source.querySelector('h4').textContent;
+                const institution = source.querySelector('.modal-institution').textContent;
+                const topics = source.querySelectorAll('.topic-details');
+
+                // 2. Poblar el sidebar inmersivo
+                courseTitleEl.textContent = title;
+                courseInstitutionEl.textContent = institution;
+                temarioListEl.innerHTML = ''; // Limpiar lista anterior
+
+                topics.forEach((topic, index) => {
+                    const summary = topic.querySelector('.topic-summary');
+                    const li = document.createElement('li');
+                    li.textContent = summary.textContent;
+                    li.dataset.topicIndex = index;
+                    temarioListEl.appendChild(li);
+                });
+                
+                // 3. Limpiar contenido principal y añadir evento a los nuevos items
+                contentDisplayEl.innerHTML = '<p>Seleccione un tema del panel izquierdo para ver su contenido.</p>';
+                addTopicClickListeners(topics);
+
+                // 4. Mostrar el overlay
+                immersiveOverlay.classList.add('open');
+                body.classList.add('menu-open');
+            }
+
+            function addTopicClickListeners(topics) {
+                temarioListEl.querySelectorAll('li').forEach(li => {
+                    li.addEventListener('click', (e) => {
+                        // Resaltar item activo
+                        temarioListEl.querySelector('li.active')?.classList.remove('active');
+                        e.currentTarget.classList.add('active');
+                        
+                        // Mostrar contenido
+                        const topicIndex = parseInt(e.currentTarget.dataset.topicIndex);
+                        const topicContent = topics[topicIndex].querySelector('.topic-content');
+                        
+                        if (topicContent) {
+                            contentDisplayEl.innerHTML = topicContent.innerHTML;
+                        } else {
+                            contentDisplayEl.innerHTML = '<p>No hay contenido disponible para este tema.</p>';
+                        }
+                    });
+                });
+            }
+
+            function closeImmersiveView() {
+                immersiveOverlay.classList.remove('open');
+                 if (document.querySelectorAll('.modal-overlay.open, #nav-overlay.open').length === 0) {
+                    body.classList.remove('menu-open');
+                }
+            }
+
+            if (immersiveCloseBtn) {
+                immersiveCloseBtn.addEventListener('click', closeImmersiveView);
+            }
+        });
 
         // --- CONTROLADOR LAB BIO-COMPUTACIONAL (AUTO-PILOT) ---
         const LabController = {
             current: 'cnn',
             animationFrame: null,
+            lastUpdate: 0,
+            updateInterval: 100, // ms
+
             modules: {
                 cnn: {
-                    stats: [ { id: 'acc', label: 'PRECISIÓN MODELO', val: '98.4%', color: '#39ff14' }, { id: 'loss', label: 'PÉRDIDA (LOSS)', val: '0.042', color: '#ff3333' }, { id: 'epoch', label: 'ÉPOCA ACTUAL', val: '45/100', color: '#00ffff' } ],
-                    renderSidebar: function(container) { container.innerHTML = this.stats.map(s => `<div class="lab-metric-box" style="border-left-color: ${s.color}"><div class="lab-metric-label">${s.label}</div><div class="lab-metric-value" id="stat-${s.id}" style="color:${s.color}">${s.val}</div></div>`).join('') + `<div style="margin-top:15px; font-size:0.7rem; color:#666;"><i class="fas fa-cog fa-spin"></i> Procesando frotis...</div>`; },
+                    stats: [ 
+                        { id: 'acc', label: 'PRECISIÓN MODELO', val: 98.4, color: '#39ff14' }, 
+                        { id: 'loss', label: 'PÉRDIDA (LOSS)', val: 0.042, color: '#ff3333' },
+                        { id: 'epoch', label: 'ÉPOCA ACTUAL', val: 45, color: '#00ffff' } 
+                    ],
+                    renderSidebar: function(container) {
+                        container.innerHTML = this.stats.map(s => `<div class="lab-metric-box" style="border-left-color: ${s.color}"><div class="lab-metric-label">${s.label}</div><div class="lab-metric-value" id="stat-${s.id}" style="color:${s.color}">${s.id === 'epoch' ? s.val + '/100' : (s.id === 'acc' ? s.val + '%' : s.val.toFixed(3))}</div></div>`).join('') + 
+                        `<div style="margin-top:15px; font-size:0.7rem; color:#666;"><i class="fas fa-cog fa-spin"></i> Procesando frotis...</div>`;
+                    },
                     init: function(display) {
                         display.innerHTML = '';
                         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        svg.setAttribute("width", "100%"); svg.setAttribute("height", "100%"); svg.setAttribute("viewBox", "0 0 800 400"); svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-                        // 1. Input
-                        svg.innerHTML += `<g><circle cx="100" cy="200" r="45" fill="#e53935" opacity="0.2"><animate attributeName="r" values="45;50;45" dur="3s" repeatCount="indefinite"/></circle><circle cx="100" cy="200" r="30" fill="#ff5252" opacity="0.8"/><circle cx="110" cy="190" r="8" fill="#5d1010" opacity="0.6"><animateTransform attributeName="transform" type="rotate" from="0 100 200" to="360 100 200" dur="10s" repeatCount="indefinite"/></circle><text x="100" y="270" text-anchor="middle" fill="#fff" font-size="10" font-family="Share Tech Mono">INPUT: FROTIS</text></g>`;
-                        // 2. Layers
-                        const drawLayer = (x, color, label) => { return `<g><rect x="${x}" y="150" width="40" height="100" rx="5" fill="none" stroke="${color}" stroke-width="2"/><circle cx="${x+20}" cy="170" r="4" fill="${color}" class="neuron-pulse"/><circle cx="${x+20}" cy="200" r="4" fill="${color}" class="neuron-pulse" style="animation-delay:0.2s"/><circle cx="${x+20}" cy="230" r="4" fill="${color}" class="neuron-pulse" style="animation-delay:0.4s"/><text x="${x+20}" y="270" text-anchor="middle" fill="${color}" font-size="10">${label}</text></g>`; };
-                        svg.innerHTML += drawLayer(250, '#2196F3', 'CONV1') + drawLayer(350, '#2196F3', 'CONV2') + drawLayer(450, '#9C27B0', 'DENSE');
-                        // 3. Links
-                        const drawLink = (x1, x2) => `<line x1="${x1}" y1="200" x2="${x2}" y2="200" stroke="#00ffff" stroke-width="2" class="data-flow"/>`;
-                        svg.innerHTML += drawLink(150, 250) + drawLink(290, 350) + drawLink(390, 450) + drawLink(490, 600);
-                        // 4. Output
-                        svg.innerHTML += `<g><rect x="600" y="140" width="120" height="120" rx="5" fill="rgba(0,0,0,0.5)" stroke="#39ff14"/><text x="660" y="170" text-anchor="middle" fill="#fff" font-size="12">DIAGNÓSTICO</text><text x="660" y="200" text-anchor="middle" fill="#39ff14" font-size="18" font-weight="bold">POSITIVO</text><text x="660" y="230" text-anchor="middle" fill="#aaa" font-size="10">CONF: 99.2%</text></g>`;
+                        svg.setAttribute("width", "100%");
+                        svg.setAttribute("height", "100%");
+                        svg.setAttribute("viewBox", "0 0 800 400");
+                        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+                        
+                        let content = `
+                            <g>
+                                <circle cx="100" cy="200" r="45" fill="#e53935" opacity="0.2"><animate attributeName="r" values="45;50;45" dur="3s" repeatCount="indefinite"/></circle>
+                                <circle cx="100" cy="200" r="30" fill="#ff5252" opacity="0.8"/>
+                                <circle cx="110" cy="190" r="8" fill="#5d1010" opacity="0.6"><animateTransform attributeName="transform" type="rotate" from="0 100 200" to="360 100 200" dur="10s" repeatCount="indefinite"/></circle>
+                                <text x="100" y="270" text-anchor="middle" fill="#fff" font-size="10" font-family="Share Tech Mono">INPUT: FROTIS</text>
+                            </g>`;
+                        
+                        const drawLayer = (x, color, label) => `<g><rect x="${x}" y="150" width="40" height="100" rx="5" fill="none" stroke="${color}" stroke-width="2"/><circle cx="${x+20}" cy="170" r="4" fill="${color}" class="neuron-pulse"/><circle cx="${x+20}" cy="200" r="4" fill="${color}" class="neuron-pulse" style="animation-delay:0.2s"/><circle cx="${x+20}" cy="230" r="4" fill="${color}" class="neuron-pulse" style="animation-delay:0.4s"/><text x="${x+20}" y="270" text-anchor="middle" fill="${color}" font-size="10">${label}</text></g>`;
+                        content += drawLayer(250, '#2196F3', 'CONV1') + drawLayer(350, '#2196F3', 'CONV2') + drawLayer(450, '#9C27B0', 'DENSE');
+                        
+                        const drawLink = (x1, x2) => `<line x1="${x1}" y1="200" x2="${x2}" y2="200" stroke="#00ffff" stroke-width="2" class="data-flow-animated"/>`;
+                        content += drawLink(150, 250) + drawLink(290, 350) + drawLink(390, 450) + drawLink(490, 600);
+                        
+                        content += `
+                            <g>
+                                <rect x="600" y="140" width="120" height="120" rx="5" fill="rgba(0,0,0,0.5)" stroke="#39ff14"/>
+                                <text x="660" y="170" text-anchor="middle" fill="#fff" font-size="12">DIAGNÓSTICO</text>
+                                <text id="lab-diagnosis-text" x="660" y="200" text-anchor="middle" fill="#39ff14" font-size="18" font-weight="bold">POSITIVO</text>
+                                <text id="lab-confidence-text" x="660" y="230" text-anchor="middle" fill="#aaa" font-size="10">CONF: 99.2%</text>
+                            </g>`;
+                        
+                        svg.innerHTML = content;
                         display.appendChild(svg);
                     },
                     update: function() {
-                        const epochEl = document.getElementById('stat-epoch');
-                        if(epochEl && Math.random()>0.9) { let curr = parseInt(epochEl.innerText.split('/')[0]); epochEl.innerText = `${(curr+1)%100}/100`; }
+                        // Update stats
+                        let acc = this.stats.find(s => s.id === 'acc');
+                        acc.val = Math.max(98.0, Math.min(99.9, acc.val + (Math.random() - 0.5) * 0.1));
+                        document.getElementById('stat-acc').textContent = acc.val.toFixed(2) + '%';
+
+                        let loss = this.stats.find(s => s.id === 'loss');
+                        loss.val = Math.max(0.01, Math.min(0.08, loss.val + (Math.random() - 0.5) * 0.005));
+                        document.getElementById('stat-loss').textContent = loss.val.toFixed(3);
+
+                        // Update diagnosis text
+                        const diagnosisText = document.getElementById('lab-diagnosis-text');
+                        if (diagnosisText) {
+                            if (Math.random() > 0.9) {
+                                diagnosisText.textContent = 'ANALIZANDO...';
+                                diagnosisText.style.fill = '#ffeb3b';
+                            } else {
+                                diagnosisText.textContent = 'POSITIVO';
+                                diagnosisText.style.fill = '#39ff14';
+                            }
+                        }
                     }
                 },
                 cluster: {
-                    stats: [ { id: 'k', label: 'CLUSTERS (K)', val: '3', color: '#FF9800' }, { id: 'iter', label: 'ITERACIONES', val: '1240', color: '#00ffff' }, { id: 'sil', label: 'SILHOUETTE', val: '0.85', color: '#39ff14' } ],
+                    stats: [ 
+                        { id: 'k', label: 'CLUSTERS (K)', val: 3, color: '#FF9800' }, 
+                        { id: 'iter', label: 'ITERACIONES', val: 1240, color: '#00ffff' }, 
+                        { id: 'sil', label: 'SILHOUETTE', val: 0.85, color: '#39ff14' } 
+                    ],
                     points: [], centers: [],
-                    renderSidebar: function(container) { container.innerHTML = this.stats.map(s => `<div class="lab-metric-box" style="border-left-color: ${s.color}"><div class="lab-metric-label">${s.label}</div><div class="lab-metric-value" id="stat-${s.id}" style="color:${s.color}">${s.val}</div></div>`).join('') + `<div style="margin-top:15px; font-size:0.7rem; color:#666;"><i class="fas fa-circle-notch fa-spin"></i> Optimizando...</div>`; },
+                    renderSidebar: function(container) {
+                         container.innerHTML = this.stats.map(s => `<div class="lab-metric-box" style="border-left-color: ${s.color}"><div class="lab-metric-label">${s.label}</div><div class="lab-metric-value" id="stat-${s.id}" style="color:${s.color}">${s.id === 'sil' ? s.val.toFixed(2) : s.val}</div></div>`).join('') + `<div style="margin-top:15px; font-size:0.7rem; color:#666;"><i class="fas fa-circle-notch fa-spin"></i> Optimizando...</div>`;
+                    },
                     init: function(display) {
                         display.innerHTML = '';
                         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        svg.setAttribute("width", "100%"); svg.setAttribute("height", "100%"); svg.setAttribute("viewBox", "0 0 800 400");
+                        svg.setAttribute("width", "100%");
+                        svg.setAttribute("height", "100%");
+                        svg.setAttribute("viewBox", "0 0 800 400");
                         const colors = ['#FF9800', '#00ffff', '#ff00ff'];
-                        this.centers = [{x: 200, y: 200, color: colors[0]}, {x: 400, y: 100, color: colors[1]}, {x: 600, y: 300, color: colors[2]}];
+                        this.centers = [{x: 200, y: 200, color: colors[0], el: null}, {x: 400, y: 100, color: colors[1], el: null}, {x: 600, y: 300, color: colors[2], el: null}];
                         this.points = [];
                         for(let i=0; i<60; i++) {
                             const cIndex = Math.floor(Math.random()*3);
@@ -501,14 +718,31 @@
                             circle.setAttribute("r", 4); circle.setAttribute("fill", p.color); circle.setAttribute("opacity", 0.6);
                             svg.appendChild(circle); p.el = circle;
                         }
-                        this.centers.forEach(c => { const cross = document.createElementNS("http://www.w3.org/2000/svg", "path"); cross.setAttribute("d", `M ${c.x-10} ${c.y} L ${c.x+10} ${c.y} M ${c.x} ${c.y-10} L ${c.x} ${c.y+10}`); cross.setAttribute("stroke", "#fff"); cross.setAttribute("stroke-width", "2"); svg.appendChild(cross); });
-                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text"); text.setAttribute("x", 400); text.setAttribute("y", 380); text.setAttribute("text-anchor", "middle"); text.setAttribute("fill", "#fff"); text.setAttribute("font-family", "Share Tech Mono"); text.setAttribute("font-size", "14"); text.textContent = "ANÁLISIS DE EXPRESIÓN GÉNICA"; svg.appendChild(text);
+                        this.centers.forEach(c => {
+                            const cross = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                            cross.setAttribute("d", `M ${c.x-10} ${c.y} L ${c.x+10} ${c.y} M ${c.x} ${c.y-10} L ${c.x} ${c.y+10}`);
+                            cross.setAttribute("stroke", "#fff");
+                            cross.setAttribute("stroke-width", "2");
+                            svg.appendChild(cross);
+                            c.el = cross;
+                        });
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.setAttribute("x", 400); text.setAttribute("y", 380); text.setAttribute("text-anchor", "middle"); text.setAttribute("fill", "#fff"); text.setAttribute("font-family", "Share Tech Mono"); text.setAttribute("font-size", "14");
+                        text.textContent = "ANÁLISIS DE EXPRESIÓN GÉNICA";
+                        svg.appendChild(text);
                         display.appendChild(svg);
                     },
                     update: function() {
                         const time = Date.now() * 0.001;
-                        this.points.forEach((p, i) => { const ox = Math.sin(time + i) * 30; const oy = Math.cos(time + i * 0.5) * 30; p.el.setAttribute("cx", p.x + ox); p.el.setAttribute("cy", p.y + oy); });
-                        const iterEl = document.getElementById('stat-iter'); if(iterEl) iterEl.innerText = Math.floor(time * 10);
+                        this.points.forEach((p, i) => { const ox = Math.sin(time + i) * 10; const oy = Math.cos(time + i * 0.5) * 10; p.el.setAttribute("cx", p.x + ox); p.el.setAttribute("cy", p.y + oy); });
+                        
+                        let iter = this.stats.find(s => s.id === 'iter');
+                        iter.val += Math.floor(Math.random() * 20);
+                        document.getElementById('stat-iter').textContent = iter.val;
+
+                        let sil = this.stats.find(s => s.id === 'sil');
+                        sil.val = Math.max(0.7, Math.min(0.95, sil.val + (Math.random() - 0.5) * 0.01));
+                        document.getElementById('stat-sil').textContent = sil.val.toFixed(2);
                     }
                 }
             },
@@ -519,12 +753,24 @@
                 this.modules[id].renderSidebar(document.getElementById('lab-sidebar'));
                 this.modules[id].init(document.getElementById('lab-display'));
             },
-            loop: function() {
-                if(LabController.modules[LabController.current].update) LabController.modules[LabController.current].update();
-                requestAnimationFrame(LabController.loop);
+            loop: function(timestamp) {
+                if (timestamp - this.lastUpdate > this.updateInterval) {
+                    if (this.modules[this.current] && this.modules[this.current].update) {
+                        this.modules[this.current].update();
+                    }
+                    this.lastUpdate = timestamp;
+                }
+                this.animationFrame = requestAnimationFrame(this.loop.bind(this));
             },
-            start: function() { this.switch('cnn'); this.loop(); }
+            start: function() {
+                this.switch('cnn');
+                this.loop(0);
+            }
         };
     </script>
+    <div id="demo-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1e1e1e; z-index: 4000; display: none;">
+        <iframe id="demo-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
+        <button id="close-demo-overlay" style="position: absolute; top: 15px; right: 25px; font-size: 35px; color: white; background: none; border: none; cursor: pointer; text-shadow: 0 0 5px black;">&times;</button>
+    </div>
 </body>
 </html>
