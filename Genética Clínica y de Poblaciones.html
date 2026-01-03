@@ -1,0 +1,2722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genética Clínica y de Poblaciones</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* PALETA DE COLORES "DEEP SPACE" PROFESIONAL */
+            --bg-body: #02040a;       /* Negro ultra profundo */
+            --bg-sidebar: #090c14;    /* Gris azulado muy oscuro */
+            --bg-panel: #0d1117;      /* Panel de código GitHub style */
+            --bg-controls: #161b22;   /* Controles */
+            
+            --accent: #3b82f6;        /* Azul Bioinformático */
+            --accent-dim: rgba(59, 130, 246, 0.15);
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --border: 1px solid rgba(255, 255, 255, 0.08);
+            
+            /* Semántica Genética */
+            --c-dna: #3b82f6; 
+            --c-mut: #ef4444;   /* Rojo para mutaciones/patógeno */
+            --c-ok: #10b981;    /* Verde para benigno/activo */
+            --c-warn: #f59e0b;  /* Naranja para VUS/incertidumbre */
+            --c-void: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; user-select: none; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-size: 13px;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- SIDEBAR (NAVEGACIÓN) --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: var(--border);
+            display: flex; flex-direction: column;
+            z-index: 50;
+            flex-shrink: 0;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .brand {
+            padding: 24px 20px;
+            background: linear-gradient(180deg, rgba(59,130,246,0.08) 0%, transparent 100%);
+            border-bottom: var(--border);
+        }
+        .brand h1 { 
+            font-size: 1.2rem; font-weight: 800; 
+            color: white; margin-bottom: 6px; 
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .brand span { 
+            font-size: 0.65rem; color: var(--accent); 
+            font-family: 'JetBrains Mono'; letter-spacing: 2px; 
+            text-transform: uppercase; font-weight: 700; 
+            display: flex; align-items: center; gap: 6px;
+        }
+        .brand span::before { content:''; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+
+        .menu { flex: 1; overflow-y: auto; padding: 15px 10px; }
+        
+        .menu-item {
+            padding: 12px 14px; margin-bottom: 4px;
+            border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-muted); font-weight: 500; 
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            font-size: 0.85rem;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.03); color: white; transform: translateX(4px); }
+        .menu-item.active {
+            background: var(--accent-dim); color: white;
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .menu-item i { width: 20px; text-align: center; color: var(--accent); opacity: 0.7; }
+        .menu-item.active i { opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); }
+
+        /* --- WORKSPACE (ÁREA PRINCIPAL) --- */
+        .workspace { flex: 1; display: grid; grid-template-columns: 32% 68%; height: 100%; }
+        
+        /* PANEL IZQUIERDO: CÓDIGO Y TEORÍA */
+        .left-panel { 
+            display: flex; flex-direction: column; 
+            border-right: var(--border); 
+            background: var(--bg-panel); 
+            min-width: 0; /* Prevenir desbordamiento flex */
+        }
+        
+        .panel-head {
+            padding: 12px 20px; background: #111; border-bottom: var(--border); border-top: var(--border);
+            font-family: 'JetBrains Mono'; font-size: 0.7rem; font-weight: 700; 
+            text-transform: uppercase; color: var(--text-muted); 
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .panel-head:first-child { border-top: none; }
+        .panel-head i { margin-right: 8px; color: var(--text-main); }
+        
+        /* Simulación de editor de código */
+        .code-box {
+            flex: 1; padding: 20px; overflow: auto;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; 
+            color: #d1d5db; line-height: 1.6; background: #0b0e11;
+            position: relative;
+        }
+        /* Highlight R/Python Style */
+        .kwd { color: #c678dd; font-weight: bold; } /* Keywords: library, function */
+        .str { color: #98c379; } /* Strings */
+        .fn { color: #61afef; } /* Functions */
+        .com { color: #5c6370; font-style: italic; } /* Comments */
+        .num { color: #d19a66; } /* Numbers */
+        .arg { color: #e06c75; } /* Arguments */
+
+        .theory-box {
+            flex: 1.2; padding: 25px; overflow-y: auto; background: var(--bg-panel);
+            font-size: 0.95rem; line-height: 1.6; color: #94a3b8;
+            border-top: var(--border);
+        }
+        .theory-box h3 { color: white; margin-bottom: 12px; font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; border-left: 3px solid var(--accent); padding-left: 10px; }
+        .theory-box p { margin-bottom: 15px; }
+        .theory-box b { color: var(--text-main); font-weight: 600; }
+        .theory-box ul { padding-left: 20px; margin-bottom: 15px; }
+        .theory-box li { margin-bottom: 6px; position: relative; }
+
+        /* PANEL DERECHO: VISUALIZACIÓN */
+        .viz-panel {
+            display: flex; flex-direction: column;
+            background: radial-gradient(circle at 50% 50%, #1a1f29 0%, #000 120%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* BARRA DE CONTROLES */
+        .controls-bar {
+            padding: 15px 25px;
+            background: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: var(--border);
+            display: flex; gap: 25px; align-items: center; flex-wrap: wrap;
+            z-index: 40; 
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
+        .control-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Estilos de inputs personalizados */
+        select {
+            background: #0d1117; border: 1px solid #30363d; color: white;
+            padding: 8px 12px; border-radius: 4px; font-family: 'Inter'; font-size: 0.8rem;
+            width: 100%; cursor: pointer; outline: none; transition: border 0.2s;
+        }
+        select:hover { border-color: var(--text-muted); }
+        select:focus { border-color: var(--accent); }
+        
+        input[type=range] { 
+            width: 100%; cursor: pointer; accent-color: var(--accent); height: 4px; border-radius: 2px;
+        }
+
+        /* CANVAS */
+        .canvas-wrapper {
+    flex: 1; 
+    position: relative; 
+    width: 100%; 
+    height: 100%; 
+    overflow: hidden; /* Importante */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+canvas { 
+    display: block; 
+    width: 100%; 
+    height: 100%; 
+}
+
+        /* ESTADÍSTICAS FLOTANTES */
+        .stats-overlay {
+            position: absolute; bottom: 25px; left: 25px; right: 25px;
+            display: flex; gap: 15px; pointer-events: none;
+            align-items: flex-end;
+        }
+        .stat-card {
+            background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(12px);
+            padding: 12px 20px; border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            border-left: 3px solid var(--accent); min-width: 130px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); pointer-events: auto;
+            transform: translateY(0); transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .stat-val { font-size: 1.3rem; font-weight: 800; color: white; font-family: 'JetBrains Mono'; margin-bottom: 2px; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px; }
+
+        /* SCROLLBARS */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #02040a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; border: 2px solid #02040a; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Botón de volver */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .back-button-elegant {
+            width: 100%;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .back-button-elegant:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="brand">
+        <h1>Genética Clínica</h1>
+        <span><i class="fas fa-microchip"></i> MASTER SUITE AI</span>
+    </div>
+            <div class="menu" id="menu-list">
+            </div>
+            <div class="sidebar-footer">
+                <button onclick="window.close()" class="back-button-elegant">
+                    <i class="fas fa-arrow-left"></i> VOLVER
+                </button>
+            </div>
+        </div>
+<div class="workspace">
+    <div class="left-panel">
+        <div class="panel-head">
+            <div><i class="fas fa-code"></i> Script R / Python</div>
+            <div style="font-size: 0.6rem; opacity: 0.5;">BIO-ID: 8821X</div>
+        </div>
+        <div class="code-box" id="code-content">
+            </div>
+        
+        <div class="panel-head"><i class="fas fa-book-medical"></i> Contexto Clínico</div>
+        <div class="theory-box" id="theory-content">
+            </div>
+    </div>
+
+    <div class="viz-panel">
+        <div class="controls-bar" id="controls-container">
+            </div>
+        <div class="canvas-wrapper" id="viz-wrapper">
+            </div>
+        <div class="stats-overlay" id="stats-container">
+            </div>
+    </div>
+</div>
+<script>
+    /**
+     * GENÉTICA CLÍNICA - MASTER SUITE ENGINE V2.0
+     * Desarrollado para simulaciones de alta fidelidad.
+     * @author Dr. Cesar Manzo & Gemini AI
+     */
+
+    // --- CONFIGURACIÓN GRÁFICA ---
+    const C = { 
+        bg: '#02040a', 
+        blue: '#3b82f6', 
+        red: '#ef4444', 
+        green: '#10b981', 
+        orange: '#f59e0b', 
+        purple: '#8b5cf6', 
+        white: '#e2e8f0', 
+        gray: '#334155',
+        void: '#0f172a' 
+    };
+
+    const APP = {
+        canvas: null,
+        ctx: null,
+        width: 0,
+        height: 0,
+        lessonId: 1,
+        frame: 0,
+        state: {}, // Estado reactivo de los controles
+        particles: [] // Sistema de partículas global
+    };
+
+    // --- BASE DE DATOS DE LECCIONES (10 TEMAS COMPLETOS) ---
+    const LESSONS = [
+        {
+            id: 1, 
+            title: "1. Genoma y Genes: Arquitectura Nuclear", 
+            icon: "fa-dna",
+            controls: [
+                {
+                    id: 'layer', 
+                    type: 'select', 
+                    label: 'Nivel de Organización', 
+                    options: [
+                        '1. Doble Hélice (Molecular)', 
+                        '2. Estructura del Gen (Exones/Intrones)', 
+                        '3. Empaquetamiento (Nucleosomas)', 
+                        '4. Cromosoma (Cariotipo)'
+                    ]
+                },
+                {
+                    id: 'feature', 
+                    type: 'select', 
+                    label: 'Elemento Destacado', 
+                    options: ['General', 'Regiones Ricas en GC', 'Metilación', 'Ninguno']
+                },
+                {
+                    id: 'speed', 
+                    type: 'range', 
+                    label: 'Velocidad Simulación', 
+                    min: 0, 
+                    max: 100, 
+                    val: 30
+                }
+            ],
+            // Código R basado en Ensembl/NCBI (PDF pág 33-35)
+            code: (s) => {
+                if (s.layer.includes('1.')) return `<span class="com"># ANÁLISIS MOLECULAR (BSgenome)</span>\n<span class="kwd">library</span>(BSgenome.Hsapiens.UCSC.hg38)\n<span class="str">seq</span> <span class="fn"><-</span> <span class="fn">getSeq</span>(Hsapiens, "chr7", start=117120000, end=117120100)\n<span class="fn">print</span>("Secuencia rica en GC:")\n<span class="fn">print</span>(seq)`;
+                if (s.layer.includes('2.')) return `<span class="com"># ESTRUCTURA GÉNICA (RefSeq/Ensembl)</span>\n<span class="str">gene_id</span> <span class="fn"><-</span> "ENSG00000141510"\n<span class="str">struct</span> <span class="fn"><-</span> <span class="fn">getBM</span>(attributes=c('5_utr_start','exon_chrom_start','3_utr_end'),\n filters='ensembl_gene_id', values=gene_id, mart=ensembl)\n<span class="com"># Exones (CDS) vs Intrones</span>\n<span class="fn">print</span>(paste("Nº Exones:", nrow(struct)))`;
+                if (s.layer.includes('3.')) return `<span class="com"># ANÁLISIS DE CROMATINA (ChIP-seq)</span>\n<span class="str">nucleosomes</span> <span class="fn"><-</span> <span class="fn">predictNucleosomePosition</span>(seq)\n<span class="kwd">if</span>(packaging == "Heterocromatina") {\n  <span class="fn">print</span>("Región Silenciada (Condensada)")\n} <span class="kwd">else</span> {\n  <span class="fn">print</span>("Eucromatina (Accesible)")\n}`;
+                return `<span class="com"># CARIOTIPO (Cytobands)</span>\n<span class="kwd">data</span>(hg38.cytoBandIdeo)\n<span class="str">chr7_bands</span> <span class="fn"><-</span> <span class="fn">subset</span>(hg38.cytoBandIdeo, chrom=="chr7")\n<span class="fn">karyoplot</span>(hg38, chromosomes="chr7")`;
+            },
+            explain: (s) => {
+                if (s.layer.includes('1.')) return `<h3>Doble Hélice (2nm)</h3><p>La base molecular. 3.000 millones de pares de bases. Observa el apareamiento A-T (2 puentes H) y C-G (3 puentes H). El contenido GC no es uniforme[cite: 679].</p>`;
+                if (s.layer.includes('2.')) return `<h3>El Gen (Definición Molecular)</h3><p>Unidad de transcripción con función biológica. Elementos clave [cite: 179-188]:<br>• <b>Promotor:</b> Caja TATA y ricas en CpG.<br>• <b>5' UTR:</b> Capping (protección).<br>• <b>Exones (CDS):</b> Se traducen.<br>• <b>Intrones:</b> Se eliminan (Splicing).<br>• <b>3' UTR:</b> Poliadenilación.</p>`;
+                if (s.layer.includes('3.')) return `<h3>Nucleosomas (11nm - 30nm)</h3><p>El ADN se enrolla alrededor de octámeros de histonas ("cuentas de collar").<br>• <b>Eucromatina:</b> Abierta, genes activos .<br>• <b>Heterocromatina:</b> Condensada, genes inactivos[cite: 663].</p>`;
+                return `<h3>Cromosoma (Metafase)</h3><p>Máxima compactación. Se observan bandas G (Giemsa) que reflejan la densidad de genes.<br>• <b>Centrómero:</b> Heterocromatina constitutiva.<br>• <b>Telómeros:</b> Extremos protectores.</p>`;
+            },
+            stats: (s) => {
+                if(s.layer.includes('1.')) return [{l:'Ancho', v:'2 nm'}, {l:'Pares Bases', v:'3.2 Gb'}, {l:'Genes', v:'~20k'}];
+                if(s.layer.includes('2.')) return [{l:'Promotor', v:'TATA/CpG'}, {l:'Splicing', v:'Alternativo'}, {l:'Exones', v:'Codificantes'}];
+                if(s.layer.includes('3.')) return [{l:'Histonas', v:'H2A,H2B,H3,H4'}, {l:'Fibra', v:'30 nm'}, {l:'Compactación', v:'50x'}];
+                return [{l:'Cromosoma', v:'Metafase'}, {l:'Bandas', v:'G-Banding'}, {l:'ADN', v:'Heterocromatina'}];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                // ===========================================
+                // MODO 1: DOBLE HÉLICE
+                // ===========================================
+                if (s.layer.includes('1.')) {
+                    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-Math.PI / 4);
+                    const speed = s.speed / 50;
+                    for (let i = -20; i < 20; i++) {
+                        const y = i * 20;
+                        const ph = (f * 0.05 * speed) + (i * 0.3);
+                        const x = Math.sin(ph) * 100;
+                        const z = Math.cos(ph); 
+                        const scale = 1 + (z * 0.3);
+                        const alpha = 0.5 + (z * 0.5);
+
+                        // Enlace
+                        ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.2})`; 
+                        ctx.beginPath(); ctx.moveTo(-x, y); ctx.lineTo(x, y); ctx.stroke();
+
+                        // Bases
+                        const c1 = z > 0 ? C.blue : C.red;
+                        const c2 = z > 0 ? C.red : C.blue;
+                        
+                        const drawBall = (bx, c) => {
+                            ctx.fillStyle = c; ctx.shadowBlur = 10; ctx.shadowColor = c;
+                            ctx.beginPath(); ctx.arc(bx, y, 6*scale, 0, Math.PI*2); ctx.fill();
+                            ctx.shadowBlur = 0;
+                        };
+
+                        if (z < 0) { drawBall(-x, c1); drawBall(x, c2); } 
+                        else { drawBall(x, c2); drawBall(-x, c1); }
+                    }
+                    ctx.restore();
+                }
+
+                // ===========================================
+                // MODO 2: ESTRUCTURA DEL GEN (Esquema plano)
+                // ===========================================
+                else if (s.layer.includes('2.')) {
+                    const by = cy; 
+                    const sx = 50;
+                    
+                    // Línea base
+                    ctx.strokeStyle = C.gray; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(w, by); ctx.stroke();
+
+                    // Cajas (Exones/Promotor)
+                    const box = (x, wi, col, txt, sub) => {
+                        ctx.fillStyle = col; ctx.shadowBlur=10; ctx.shadowColor=col;
+                        ctx.fillRect(x, by-15, wi, 30); ctx.shadowBlur=0;
+                        ctx.fillStyle = "white"; ctx.font="bold 10px Inter"; ctx.textAlign="center";
+                        ctx.fillText(txt, x+wi/2, by-20);
+                        if(sub) { ctx.fillStyle=C.gray; ctx.fillText(sub, x+wi/2, by+25); }
+                    };
+
+                    box(sx, 50, C.orange, "Prom", "TATA");
+                    // Flecha
+                    ctx.strokeStyle="white"; ctx.beginPath(); ctx.moveTo(sx+50, by-5); ctx.lineTo(sx+70, by-20); ctx.lineTo(sx+80, by-20); ctx.stroke();
+
+                    box(sx+60, 40, "#38bdf8", "5'UTR", "Cap");
+                    box(sx+110, 80, C.blue, "EXÓN 1", "ATG");
+                    
+                    ctx.fillStyle=C.gray; ctx.fillText("Intrón 1", sx+220, by-5); // Intron gap
+
+                    box(sx+250, 90, C.blue, "EXÓN 2", "");
+                    box(sx+380, 40, "#38bdf8", "3'UTR", "Poly-A");
+
+                    // Polimerasa animada
+                    const px = (f * s.speed/20) % w;
+                    ctx.fillStyle = "rgba(16, 185, 129, 0.4)";
+                    ctx.beginPath(); ctx.arc(px, by, 30, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle="white"; ctx.fillText("Pol II", px, by+4);
+                }
+
+                // ===========================================
+                // MODO 3: EMPAQUETAMIENTO (Nucleosomas) - CORREGIDO
+                // ===========================================
+                else if (s.layer.includes('3.')) {
+                    // Animación de espiral/solenoide
+                    ctx.save();
+                    const speed = s.speed / 40;
+                    const offset = f * speed;
+                    
+                    ctx.strokeStyle = C.blue; ctx.lineWidth = 2;
+
+                    // Dibujar Histonas (Esferas) en un camino sinoidal
+                    const points = 12;
+                    const spacing = w / points;
+
+                    for(let i = -2; i < points + 2; i++) {
+                        const x = (i * spacing) + (offset % spacing) - spacing;
+                        const yBase = cy + Math.sin((x + offset)*0.01) * 50;
+
+                        // Hilo de ADN envolviendo
+                        ctx.beginPath();
+                        ctx.moveTo(x - 20, yBase);
+                        ctx.bezierCurveTo(x-20, yBase-30, x+20, yBase-30, x+20, yBase); // Loop arriba
+                        ctx.bezierCurveTo(x+20, yBase+30, x-20, yBase+30, x-20, yBase); // Loop abajo
+                        ctx.stroke();
+
+                        // Histona (Octámero)
+                        ctx.fillStyle = C.orange;
+                        ctx.shadowBlur = 15; ctx.shadowColor = C.orange;
+                        ctx.beginPath(); ctx.arc(x, yBase, 12, 0, Math.PI*2); ctx.fill();
+                        ctx.shadowBlur = 0;
+
+                        // Detalle
+                        ctx.fillStyle = "rgba(255,255,255,0.8)";
+                        ctx.beginPath(); ctx.arc(x-4, yBase-4, 3, 0, Math.PI*2); ctx.fill();
+                    }
+                    
+                    ctx.fillStyle = "white"; ctx.font = "12px Inter"; ctx.textAlign = "left";
+                    ctx.fillText("MODELO SOLENOIDE (30nm) - Heterocromatina vs Eucromatina", 20, h-20);
+                    ctx.restore();
+                }
+
+                // ===========================================
+                // MODO 4: CROMOSOMA (Metafase) - CORREGIDO
+                // ===========================================
+                else {
+                    // Dibujar Cromosoma X estilizado con bandas
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    
+                    // Efecto de respiración
+                    const scale = 1 + Math.sin(f * 0.05) * 0.02;
+                    ctx.scale(scale, scale);
+
+                    // Función para dibujar una cromátida
+                    const drawChromatid = (offsetX) => {
+                        ctx.beginPath();
+                        ctx.roundRect(offsetX - 30, -150, 60, 130, 30); // Brazo p (corto)
+                        ctx.roundRect(offsetX - 30, 0, 60, 180, 30);    // Brazo q (largo)
+                        ctx.fillStyle = "rgba(59, 130, 246, 0.2)"; // Azul base transparente
+                        ctx.strokeStyle = C.blue; ctx.lineWidth = 3;
+                        ctx.fill(); ctx.stroke();
+
+                        // Dibujar Bandas G (Heterocromatina) 
+                        for(let j = 0; j < 10; j++) {
+                            const by = -120 + j * 30;
+                            if(by > -20 && by < 20) continue; // Saltar centrómero
+                            
+                            // Aleatoriedad determinista para patrón de bandas
+                            const isDark = Math.sin(j * 123) > 0; 
+                            if(isDark) {
+                                ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+                                ctx.fillRect(offsetX - 25, by, 50, 15);
+                            }
+                        }
+                    };
+
+                    drawChromatid(-20); // Izquierda
+                    drawChromatid(20);  // Derecha
+
+                    // Centrómero (Heterocromatina Constitutiva [cite: 666])
+                    ctx.fillStyle = C.red; ctx.shadowBlur = 20; ctx.shadowColor = C.red;
+                    ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI*2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                    
+                    // Escáner de análisis (Animación)
+                    const scanY = (f * 2 % 350) - 160;
+                    ctx.strokeStyle = C.green; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(-60, scanY); ctx.lineTo(60, scanY); ctx.stroke();
+                    ctx.fillStyle = C.green; ctx.fillText("ANALIZANDO BANDAS: 7q31", 70, scanY);
+
+                    ctx.restore();
+                }
+            }
+        },
+
+       {
+            id: 2,
+            title: "2. Herencia Mendeliana y Patrones",
+            icon: "fa-project-diagram",
+            controls: [
+                {
+                    id: 'pattern',
+                    type: 'select',
+                    label: 'Patrón de Herencia',
+                    options: [
+                        'Autosómica Dominante (AD)',
+                        'Autosómica Recesiva (AR)',
+                        'Ligada al X Recesiva (XR)',
+                        'Ligada al X Dominante (XD)',
+                        'Ligada al Y (Holándrica)'
+                    ]
+                },
+                {
+                    id: 'complication',
+                    type: 'select',
+                    label: 'Fenómeno No Mendeliano',
+                    options: ['Ninguno (Mendel Puro)', 'Penetrancia Incompleta', 'Mosaicismo Germinal', 'Expresividad Variable']
+                },
+                {
+                    id: 'speed',
+                    type: 'range',
+                    label: 'Velocidad Transmisión',
+                    min: 0,
+                    max: 100,
+                    val: 40
+                }
+            ],
+            // Código R basado en la librería 'kinship2' para análisis de pedigríes
+            code: (s) => {
+                let risk = "50%";
+                if (s.pattern.includes('Recesiva (AR)')) risk = "25%";
+                if (s.pattern.includes('Holándrica')) risk = "100% (Solo Varones)";
+
+                return `<span class="com"># ANÁLISIS DE PEDIGRÍ CLÍNICO</span>
+<span class="kwd">library</span>(kinship2)
+
+<span class="com"># 1. Definición del Proband y Familia</span>
+<span class="com"># ID, Padre, Madre, Sexo (1=M, 2=F), Afectado (1=Sí, 0=No)</span>
+<span class="str">ped_df</span> <span class="fn"><-</span> <span class="fn">data.frame</span>(
+  id = <span class="fn">c</span>(1, 2, 3, 4, 5, 6),
+  dad = <span class="fn">c</span>(0, 0, 1, 1, 1, 1),
+  mom = <span class="fn">c</span>(0, 0, 2, 2, 2, 2),
+  sex = <span class="fn">c</span>(1, 2, 1, 2, 1, 2),
+  affected = <span class="fn">c</span>(1, 0, 1, 0, 0, 1)
+)
+
+<span class="com"># 2. Creación del objeto Pedigree</span>
+<span class="str">ped</span> <span class="fn"><-</span> <span class="fn">pedigree</span>(id=ped_df$id, dad=ped_df$dad, mom=ped_df$mom, 
+                 sex=ped_df$sex, affected=ped_df$affected)
+
+<span class="com"># 3. Cálculo de Riesgo de Recurrencia</span>
+<span class="com"># Patrón: ${s.pattern}</span>
+<span class="str">recurrence_risk</span> <span class="fn"><-</span> "${risk}"
+
+<span class="com"># 4. Ajuste por Complicaciones</span>
+<span class="kwd">if</span>("${s.complication}" == "Penetrancia Incompleta") {
+  <span class="str">risk_adj</span> <span class="fn"><-</span> recurrence_risk * penetrance_factor
+  <span class="fn">print</span>(paste("Riesgo ajustado:", risk_adj))
+}
+
+<span class="fn">plot</span>(ped, <span class="arg">col</span>="red", <span class="arg">symbolsize</span>=1.5)`;
+            },
+            explain: (s) => {
+                if (s.pattern.includes('Dominante (AD)')) {
+                    return `<h3>Autosómica Dominante</h3>
+                    <p>La enfermedad aparece en todas las generaciones (transmisión vertical). Un individuo afectado tiene un <b>50%</b> de probabilidad de transmitir el alelo mutado a su descendencia, independientemente del sexo.</p>
+                    <ul>
+                        <li><b>Ejemplos:</b> Acondroplasia, Síndrome de Marfan.</li>
+                        <li><b>Clave:</b> No hay portadores sanos (salvo penetrancia incompleta).</li>
+                    </ul>`;
+                } else if (s.pattern.includes('Recesiva (AR)')) {
+                    return `<h3>Autosómica Recesiva</h3>
+                    <p>Transmisión horizontal (afecta a hermanos). Los padres suelen ser portadores sanos (heterocigotos). El riesgo de recurrencia es del <b>25%</b>.</p>
+                    <ul>
+                        <li><b>Consanguinidad:</b> Aumenta el riesgo de aparición.</li>
+                        <li><b>Ejemplos:</b> Fibrosis Quística, Anemia Falciforme.</li>
+                    </ul>`;
+                } else if (s.pattern.includes('X Recesiva')) {
+                    return `<h3>Ligada al X Recesiva</h3>
+                    <p>Afecta principalmente a varones. Las mujeres suelen ser portadoras (mosaicos debido a la inactivación del X). <b>No existe transmisión varón-varón</b>.</p>
+                    <ul>
+                        <li><b>Riesgo:</b> Una madre portadora transmite al 50% de sus hijos varones la enfermedad.</li>
+                        <li><b>Ejemplos:</b> Hemofilia A, Distrofia de Duchenne.</li>
+                    </ul>`;
+                } else if (s.pattern.includes('Holándrica')) {
+                    return `<h3>Herencia Ligada al Y</h3>
+                    <p>Transmisión estricta de padre a hijo varón. Solo los varones enferman. Afecta al 100% de la descendencia masculina.</p>
+                    <ul>
+                        <li>Genes implicados: SRY, genes de fertilidad masculina.</li>
+                    </ul>`;
+                } else {
+                    return `<h3>Ligada al X Dominante</h3>
+                    <p>Las madres afectadas transmiten al 50% de hijos e hijas. Los padres afectados transmiten a <b>todas</b> sus hijas pero a <b>ningún</b> hijo varón.</p>
+                    <ul>
+                        <li><b>Ejemplos:</b> Raquitismo hipofosfatémico.</li>
+                    </ul>`;
+                }
+            },
+            stats: (s) => {
+                let risk = "50%";
+                let carrier = "No";
+                let sexBias = "Igual";
+
+                if (s.pattern.includes('Recesiva (AR)')) { risk = "25%"; carrier = "Sí (Obligados)"; }
+                if (s.pattern.includes('X Recesiva')) { risk = "50% (Hijos)"; carrier = "Mujeres"; sexBias = "Varones >"; }
+                if (s.pattern.includes('Holándrica')) { risk = "100% (Hijos)"; carrier = "No"; sexBias = "Solo Varones"; }
+
+                return [
+                    {l: 'Riesgo Hijos', v: risk},
+                    {l: 'Portadores', v: carrier},
+                    {l: 'Sesgo Sexo', v: sexBias}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w / 2, cy = h / 2;
+                ctx.clearRect(0, 0, w, h);
+
+                // --- CONFIGURACIÓN DEL ÁRBOL (3 GENERACIONES) ---
+                // Generación I: Abuelos
+                // Generación II: Padres (Uno viene de fuera)
+                // Generación III: Hijos
+
+                // Definimos colores
+                const cMale = "#3b82f6";   // Cuadrado
+                const cFemale = "#ec4899"; // Círculo
+                const cAff = "#ef4444";    // Afectado (Rojo)
+                const cCarr = "#f59e0b";   // Portador (Naranja/Punto)
+                const cBone = "#94a3b8";   // Líneas
+
+                // LÓGICA GENÉTICA SIMPLIFICADA
+                let p1_state = 0; // 0: Sano, 1: Afectado, 2: Portador
+                let p2_state = 0; 
+                let k_states = [0, 0, 0, 0]; // 4 Hijos: M, F, M, F
+
+                if (s.pattern.includes('Dominante (AD)')) {
+                    // Padre Afectado (Heterocigoto) + Madre Sana
+                    p1_state = 1; p2_state = 0;
+                    // Hijos: 50% Afectados
+                    k_states = [1, 0, 0, 1]; // Azar mendeliano
+                    
+                    if(s.complication.includes('Penetrancia')) {
+                        // El último hijo tiene el gen (1) pero no el fenotipo visualmente completo
+                        // Lo dibujaremos especial
+                        k_states[3] = 3; // Código 3: Penetrancia reducida
+                    }
+                } 
+                else if (s.pattern.includes('Recesiva (AR)')) {
+                    // Ambos padres portadores
+                    p1_state = 2; p2_state = 2;
+                    // Hijos: 25% Sano, 50% Portador, 25% Afectado
+                    k_states = [0, 2, 2, 1];
+                }
+                else if (s.pattern.includes('X Recesiva')) {
+                    // Padre Sano, Madre Portadora
+                    p1_state = 0; p2_state = 2;
+                    // Hijos: Varón Sano, Mujer Portadora, Varón Afectado, Mujer Sana
+                    k_states = [0, 2, 1, 0];
+                }
+                else if (s.pattern.includes('Holándrica')) {
+                    // Padre Afectado
+                    p1_state = 1; p2_state = 0;
+                    // Hijos: Solo varones afectados
+                    k_states = [1, 0, 1, 0];
+                }
+                else { // X Dominante
+                    // Padre Afectado
+                    p1_state = 1; p2_state = 0;
+                    // Hijos: Todas las hijas afectadas, ningún hijo
+                    k_states = [0, 1, 0, 1];
+                }
+
+                // --- FUNCIÓN DE DIBUJO DE INDIVIDUO ---
+                const drawPerson = (x, y, sex, state, label) => {
+                    ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; // Fondo oscuro
+                    ctx.strokeStyle = cBone;
+                    ctx.lineWidth = 2;
+
+                    // 1. Forma Base
+                    ctx.beginPath();
+                    if (sex === 'M') ctx.rect(x - 20, y - 20, 40, 40); // Cuadrado
+                    else ctx.arc(x, y, 22, 0, Math.PI * 2);           // Círculo
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 2. Relleno según Estado
+                    // Estado 1: Afectado Total
+                    if (state === 1) {
+                        ctx.fillStyle = cAff;
+                        ctx.beginPath();
+                        if (sex === 'M') ctx.rect(x - 20, y - 20, 40, 40);
+                        else ctx.arc(x, y, 22, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    // Estado 2: Portador (Punto central o mitad)
+                    else if (state === 2) {
+                        ctx.fillStyle = cCarr;
+                        ctx.beginPath();
+                        // Dibujar punto central clásico de portador
+                        ctx.arc(x, y, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    // Estado 3: Penetrancia Incompleta (Tiene el gen, pero se ve sano o parcial)
+                    else if (state === 3) {
+                        // Degradado o punteado
+                        ctx.fillStyle = cAff;
+                        ctx.globalAlpha = 0.3; // Se ve apenas
+                        ctx.beginPath();
+                        if (sex === 'M') ctx.rect(x - 20, y - 20, 40, 40);
+                        else ctx.arc(x, y, 22, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                        ctx.fillStyle = "white"; ctx.font="9px Inter"; ctx.textAlign="center";
+                        ctx.fillText("?", x, y+4); // Signo de duda
+                    }
+
+                    // Mosaicismo (Complicación global)
+                    if (s.complication.includes('Mosaicismo') && state === 0 && Math.random() > 0.98) {
+                        // Efecto visual: Pequeño sector mutado en un sano
+                        ctx.fillStyle = cAff;
+                        ctx.beginPath(); ctx.moveTo(x, y); ctx.arc(x, y, 20, 0, 0.5); ctx.fill();
+                    }
+
+                    // Etiqueta
+                    if (label) {
+                        ctx.fillStyle = C.text_muted; ctx.font = "10px Inter"; ctx.textAlign = "center";
+                        ctx.fillText(label, x, y + 35);
+                    }
+                };
+
+                // --- DIBUJAR ESTRUCTURA ---
+                const yGen1 = h * 0.2;
+                const yGen2 = h * 0.5; // Fila Padres
+                const yGen3 = h * 0.8; // Fila Hijos
+
+                // Líneas de conexión (Generación II)
+                ctx.strokeStyle = cBone; ctx.lineWidth = 2;
+                // Pareja Padres
+                ctx.beginPath(); ctx.moveTo(cx - 50, yGen2); ctx.lineTo(cx + 50, yGen2); ctx.stroke();
+                // Bajada a hijos
+                ctx.beginPath(); ctx.moveTo(cx, yGen2); ctx.lineTo(cx, yGen2 + 40); ctx.stroke();
+                // Barra horizontal hijos
+                ctx.beginPath(); ctx.moveTo(cx - 150, yGen2 + 40); ctx.lineTo(cx + 150, yGen2 + 40); ctx.stroke();
+
+                // DIBUJAR PERSONAS
+                
+                // PADRES (II)
+                // Padre (M) - Izquierda
+                drawPerson(cx - 50, yGen2, 'M', p1_state, "II-1");
+                // Madre (F) - Derecha
+                drawPerson(cx + 50, yGen2, 'F', p2_state, "II-2");
+
+                // ABUELOS (I) - Solo sugeridos arriba para dar contexto de linaje
+                ctx.globalAlpha = 0.4;
+                ctx.beginPath(); ctx.moveTo(cx - 50, yGen2 - 20); ctx.lineTo(cx - 50, yGen1 + 20); ctx.stroke();
+                drawPerson(cx - 90, yGen1, 'M', 0, "I-1"); // Abuelo
+                drawPerson(cx - 10, yGen1, 'F', (s.pattern.includes('Recesiva') || s.pattern.includes('X')) ? 2 : 1, "I-2"); // Abuela (Fuente probable)
+                ctx.globalAlpha = 1.0;
+
+                // HIJOS (III)
+                // Bajadas individuales
+                const childX = [-150, -50, 50, 150];
+                const childSex = ['M', 'F', 'M', 'F'];
+                
+                childX.forEach((x, i) => {
+                    ctx.beginPath(); ctx.moveTo(cx + x, yGen2 + 40); ctx.lineTo(cx + x, yGen3 - 20); ctx.stroke();
+                    drawPerson(cx + x, yGen3, childSex[i], k_states[i], `III-${i + 1}`);
+                });
+
+                // --- ANIMACIÓN DE ALELOS (PARTÍCULAS) ---
+                // Simula el flujo del gen mutado desde el padre/madre afectado hacia los hijos
+                const speed = s.speed / 20;
+                const t = (f * speed) % 100; // 0 a 100
+                const progress = t / 100;
+
+                // Identificar quién transmite (Fuente)
+                let sourceX = 0;
+                if (p1_state === 1 || p1_state === 2) sourceX = -50; // Padre tiene el gen
+                else if (p2_state === 1 || p2_state === 2) sourceX = 50; // Madre tiene el gen
+                
+                // Si ambos (AR), animamos desde ambos, pero simplifiquemos a uno principal para visualización clara
+                
+                // Dibujar partícula bajando
+                if (sourceX !== 0) {
+                    ctx.fillStyle = cAff;
+                    ctx.shadowBlur = 10; ctx.shadowColor = cAff;
+                    
+                    // Fase 1: Padre a Centro
+                    let px = cx + sourceX;
+                    let py = yGen2;
+                    
+                    if (progress < 0.2) {
+                        // Quieto en padre
+                    } else if (progress < 0.4) {
+                        // Moviendo al centro de cruce
+                        const p = (progress - 0.2) / 0.2;
+                        px = (cx + sourceX) + (0 - sourceX) * p; // Hacia x=0 (centro relativo de la línea de unión)
+                    } else if (progress < 0.6) {
+                        // Bajando por la línea central
+                        const p = (progress - 0.4) / 0.2;
+                        px = cx;
+                        py = yGen2 + (40 * p);
+                    } else {
+                        // Distribuyéndose a los hijos afectados/portadores
+                        const p = (progress - 0.6) / 0.4;
+                        // Dibujar múltiples partículas yendo a los hijos correspondientes
+                        k_states.forEach((state, i) => {
+                            if (state > 0) { // Si el hijo recibe algo
+                                const targetX = childX[i];
+                                const currX = cx + (targetX * p);
+                                const currY = (yGen2 + 40) + ((yGen3 - 20 - (yGen2 + 40)) * p);
+                                
+                                ctx.beginPath(); ctx.arc(currX, currY, 4, 0, Math.PI*2); ctx.fill();
+                            }
+                        });
+                        return; // Salir para no dibujar la partícula única
+                    }
+                    
+                    // Dibujar partícula única en fases 1-3
+                    if (progress < 0.6) {
+                         ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2); ctx.fill();
+                    }
+                    ctx.shadowBlur = 0;
+                }
+            }
+        },
+
+        {
+            id: 3,
+            title: "3. Variación Genética: SNVs, Indels y CNVs",
+            icon: "fa-random",
+            controls: [
+                {
+                    id: 'type',
+                    type: 'select',
+                    label: 'Tipo de Variante',
+                    options: [
+                        'SNV: Missense (Cambio de sentido)',
+                        'SNV: Nonsense (Codón de Stop)',
+                        'Indel: Frameshift (Deleción 1bp)',
+                        'Indel: In-frame (Inserción 3bp)',
+                        'CNV: Duplicación (>50bp)',
+                        'Dinámica: Expansión de Tripletes'
+                    ]
+                },
+                {
+                    id: 'origin',
+                    type: 'select',
+                    label: 'Origen',
+                    options: ['Germinal (Heredable)', 'Somática (Adquirida/Cáncer)']
+                },
+                {
+                    id: 'freq',
+                    type: 'range',
+                    label: 'Frecuencia Poblacional (MAF)',
+                    min: 0,
+                    max: 100,
+                    val: 0
+                }
+            ],
+            // Código R simulado para Variant Calling y Anotación (basado en PDF pág. 24-30)
+            code: (s) => {
+                let hgvs = "c.345G>A";
+                let consequence = "missense_variant";
+                if(s.type.includes('Nonsense')) { hgvs = "c.345G>T"; consequence = "stop_gained"; }
+                if(s.type.includes('Frameshift')) { hgvs = "c.345delG"; consequence = "frameshift_variant"; }
+                if(s.type.includes('Duplicación')) { hgvs = "c.345_450dup"; consequence = "transcript_amplification"; }
+
+                return `<span class="com"># VARIANT CALLING & ANNOTATION (GATK / VEP)</span>
+<span class="kwd">library</span>(VariantAnnotation)
+
+<span class="com"># 1. Cargar archivo VCF (Variant Call Format)</span>
+<span class="str">vcf</span> <span class="fn"><-</span> <span class="fn">readVcf</span>("paciente_001.vcf", "hg38")
+
+<span class="com"># 2. Filtrar variante por calidad y profundidad</span>
+<span class="str">var</span> <span class="fn"><-</span> <span class="fn">subset</span>(vcf, QUAL > 30 & DP > 20)
+
+<span class="com"># 3. Anotación Funcional (Predictor VEP)</span>
+<span class="com"># HGVS: ${hgvs} | Tipo: ${s.type.split(':')[0]}</span>
+<span class="str">effect</span> <span class="fn"><-</span> "${consequence}"
+
+<span class="com"># 4. Clasificación Clínica (ClinVar/ACMG)</span>
+<span class="kwd">if</span>(maf < 0.01 && effect == "frameshift_variant") {
+    <span class="fn">print</span>("PATHOGENIC: Loss of function")
+} <span class="kwd">else</span> {
+    <span class="fn">print</span>("VUS / BENIGN (Polimorfismo)")
+}`;
+            },
+            explain: (s) => {
+                if (s.type.includes('SNV')) {
+                    return `<h3>SNV (Single Nucleotide Variant)</h3>
+                    <p>Cambio de un solo nucleótido. Es la variación más frecuente.</p>
+                    <ul>
+                        <li><b>Missense:</b> Cambia el aminoácido. Puede alterar la función de la proteína o ser neutro.</li>
+                        <li><b>Nonsense:</b> Crea un codón de STOP prematuro. Suele degradar el mRNA (NMD) o truncar la proteína (muy grave).</li>
+                        <li><b>Sinónima:</b> No cambia el aminoácido (silenciosa).</li>
+                    </ul>`;
+                } else if (s.type.includes('Indel')) {
+                    return `<h3>Indel (Inserción / Deleción)</h3>
+                    <p>Ganancia o pérdida de pequeños fragmentos de ADN (<50pb).</p>
+                    <ul>
+                        <li><b>Frameshift:</b> Si el tamaño NO es múltiplo de 3, cambia el marco de lectura. Toda la secuencia proteica posterior es errónea. ¡Devastador!</li>
+                        <li><b>In-frame:</b> Si es múltiplo de 3, añade o quita aminoácidos sin alterar el resto.</li>
+                    </ul>`;
+                } else if (s.type.includes('CNV')) {
+                    return `<h3>CNV (Copy Number Variation)</h3>
+                    <p>Variantes estructurales grandes (>50pb) que implican ganancia (Duplicación) o pérdida (Deleción) de material genómico.</p>
+                    <p>Son comunes en enfermedades complejas y trastornos del neurodesarrollo (ej. autismo, esquizofrenia).</p>`;
+                } else {
+                    return `<h3>Mutaciones Dinámicas</h3>
+                    <p>Expansión inestable de repeticiones de nucleótidos (ej. CAG CAG CAG...).</p>
+                    <ul>
+                        <li><b>Fenómeno de Anticipación:</b> La enfermedad empeora y aparece antes en generaciones sucesivas al crecer la expansión.</li>
+                        <li><b>Ejemplo:</b> Enfermedad de Huntington.</li>
+                    </ul>`;
+                }
+            },
+            stats: (s) => {
+                const maf = s.freq / 100;
+                let classification = maf > 0.01 ? "Polimorfismo (>1%)" : "Mutación (<1%)";
+                if(s.type.includes('Nonsense') || s.type.includes('Frameshift')) classification = "Patogénica Probable";
+                
+                return [
+                    {l: 'Clasificación', v: classification},
+                    {l: 'Impacto', v: s.type.includes('SNV') ? 'Puntual' : 'Estructural'},
+                    {l: 'Base Datos', v: maf > 0.01 ? 'dbSNP' : 'ClinVar'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                // ===========================================
+                // MODO 1: SECUENCIA DE ADN (SNV e Indels)
+                // ===========================================
+                if (s.type.includes('SNV') || s.type.includes('Indel')) {
+                    const baseSeq = "ATG CCA TAC GGC TTA AGC TGA";
+                    let displaySeq = baseSeq;
+                    let aaSeq = ["Met", "Pro", "Tyr", "Gly", "Leu", "Ser", "STOP"];
+                    let colors = [C.blue, C.blue, C.blue, C.blue, C.blue, C.blue, C.red];
+                    let highlightIdx = -1;
+
+                    // Lógica de Mutación Visual
+                    if (s.type.includes('Missense')) {
+                        displaySeq = "ATG CCA TCC GGC TTA AGC TGA"; // Tyr -> Ser
+                        aaSeq[2] = "Ser"; 
+                        colors[2] = C.orange; // Cambio AA
+                        highlightIdx = 8;
+                    } 
+                    else if (s.type.includes('Nonsense')) {
+                        displaySeq = "ATG CCA TAA GGC TTA AGC TGA"; // Tyr -> STOP
+                        aaSeq[2] = "STOP"; aaSeq[3] = ""; aaSeq[4] = ""; aaSeq[5] = ""; aaSeq[6] = "";
+                        colors[2] = C.red;
+                        highlightIdx = 8;
+                    }
+                    else if (s.type.includes('Frameshift')) {
+                        // Deleción de una 'C' en el codón 2
+                        displaySeq = "ATG CAT ACG GCT TAA GCT GA"; 
+                        aaSeq = ["Met", "His", "Thr", "Ala", "STOP", "", ""]; // Cambio total
+                        colors = [C.blue, C.red, C.red, C.red, C.red, C.gray, C.gray]; // Todo rojo (caos)
+                        highlightIdx = 4;
+                    }
+                    else if (s.type.includes('In-frame')) {
+                        // Inserción GGG
+                        displaySeq = "ATG CCA GGG TAC GGC TTA ...";
+                        aaSeq = ["Met", "Pro", "Gly", "Tyr", "Gly", "Leu", ""];
+                        colors = [C.blue, C.blue, C.green, C.blue, C.blue, C.blue, C.blue];
+                        highlightIdx = 8;
+                    }
+
+                    // Renderizar Secuencia ADN
+                    ctx.font = "bold 24px 'JetBrains Mono'"; ctx.textAlign = "center";
+                    const startX = cx - (displaySeq.length * 9);
+                    
+                    for(let i=0; i<displaySeq.length; i++) {
+                        const char = displaySeq[i];
+                        const x = startX + (i * 18);
+                        
+                        // Resaltar mutación con pulso
+                        if(i === highlightIdx || (s.type.includes('Frameshift') && i > highlightIdx)) {
+                            ctx.fillStyle = (i === highlightIdx) ? C.orange : C.white;
+                            if(s.type.includes('Frameshift') && i > highlightIdx) ctx.fillStyle = "#fca5a5"; // Rojo claro
+                            
+                            // Efecto pulso
+                            if(i === highlightIdx) {
+                                const scale = 1 + Math.sin(f * 0.2) * 0.3;
+                                ctx.font = `bold ${24 * scale}px 'JetBrains Mono'`;
+                            } else {
+                                ctx.font = "bold 24px 'JetBrains Mono'";
+                            }
+                        } else {
+                            ctx.fillStyle = C.text_muted;
+                            ctx.font = "bold 24px 'JetBrains Mono'";
+                        }
+                        
+                        ctx.fillText(char, x, cy - 20);
+                    }
+
+                    // Renderizar Aminoácidos (Bolas)
+                    const codonWidth = 18 * 4; // Aprox ancho de 3 letras + espacio
+                    for(let i=0; i<aaSeq.length; i++) {
+                        if(aaSeq[i] === "") continue;
+                        
+                        const ax = startX + 25 + (i * codonWidth); // Ajuste posición
+                        const col = colors[i];
+                        
+                        // Conector
+                        ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(ax, cy-10); ctx.lineTo(ax, cy+30); ctx.stroke();
+
+                        // Bola AA
+                        ctx.fillStyle = col; ctx.shadowBlur = 10; ctx.shadowColor = col;
+                        ctx.beginPath(); ctx.arc(ax, cy+40, 18, 0, Math.PI*2); ctx.fill();
+                        ctx.shadowBlur = 0;
+                        
+                        // Texto AA
+                        ctx.fillStyle = "white"; ctx.font = "bold 10px Inter";
+                        ctx.fillText(aaSeq[i], ax, cy+44);
+                    }
+                    
+                    // Texto Estado
+                    let statusText = "PROTEÍNA NATIVA";
+                    if(s.type.includes('Frameshift')) statusText = "CAMBIO DE MARCO DE LECTURA (CAOS)";
+                    if(s.type.includes('Nonsense')) statusText = "TRUNCAMIENTO PREMATURO";
+                    
+                    ctx.fillStyle = "white"; ctx.font = "16px Inter"; 
+                    ctx.fillText(statusText, cx, cy + 100);
+                }
+
+                // ===========================================
+                // MODO 2: CNV (Variantes Estructurales)
+                // ===========================================
+                else if (s.type.includes('CNV')) {
+                    // Dibujar dos cromosomas homólogos
+                    const drawChr = (y, type) => {
+                        ctx.fillStyle = C.gray;
+                        ctx.roundRect(cx - 200, y, 400, 20, 10); ctx.fill();
+                        
+                        // Bloques de genes
+                        const genes = [
+                            {c: C.blue, x: -150, w: 50, n: "GEN A"},
+                            {c: C.green, x: -50, w: 80, n: "GEN B (Dosis)"}, // El gen afectado
+                            {c: C.orange, x: 80, w: 60, n: "GEN C"}
+                        ];
+                        
+                        genes.forEach(g => {
+                            ctx.fillStyle = g.c;
+                            ctx.fillRect(cx + g.x, y, g.w, 20);
+                            ctx.fillStyle = "white"; ctx.font = "10px Inter";
+                            ctx.fillText(g.n, cx + g.x + g.w/2, y + 14);
+                        });
+
+                        // Duplicación visual
+                        if(type === 'dup') {
+                            ctx.fillStyle = C.green; ctx.strokeStyle = "white"; ctx.lineWidth = 2;
+                            // Dibujar bloque extra insertado
+                            const dupX = cx + 30; // Justo después del original
+                            ctx.fillRect(dupX, y - 10, 80, 40); ctx.strokeRect(dupX, y - 10, 80, 40);
+                            ctx.fillStyle = "white"; ctx.fillText("GEN B (Copia)", dupX + 40, y + 15);
+                            
+                            // Flecha indicadora
+                            ctx.beginPath(); ctx.moveTo(dupX+40, y-30); ctx.lineTo(dupX+40, y-15); ctx.stroke();
+                            ctx.fillText("DUPLICACIÓN EN TÁNDEM", dupX+40, y-40);
+                        }
+                    };
+
+                    // Cromosoma 1 (Normal)
+                    drawChr(cy - 60, 'norm');
+                    ctx.fillStyle = C.text_muted; ctx.fillText("ALELO 1 (REFERENCIA)", cx - 250, cy - 45);
+
+                    // Cromosoma 2 (Mutado)
+                    drawChr(cy + 40, 'dup');
+                    ctx.fillStyle = C.text_muted; ctx.fillText("ALELO 2 (PATIENTE)", cx - 250, cy + 55);
+                }
+
+                // ===========================================
+                // MODO 3: MUTACIÓN DINÁMICA (Expansión)
+                // ===========================================
+                else {
+                    // Visualizar bucle de ADN "tartamudeando"
+                    const repeats = 10 + Math.floor((f * 0.1) % 30); // Creciendo
+                    
+                    ctx.font = "bold 20px 'JetBrains Mono'";
+                    
+                    // Parte fija
+                    ctx.fillStyle = C.gray;
+                    ctx.fillText("5'- UTR ... ", cx - 200, cy);
+                    
+                    // Repeticiones CAG
+                    let x = cx - 120;
+                    // Dibujar en espiral o bucle si son muchos
+                    for(let i=0; i<repeats; i++) {
+                        const isExcess = i > 15; // Umbral patológico visual
+                        ctx.fillStyle = isExcess ? C.red : C.green;
+                        
+                        if(isExcess) {
+                            // Efecto temblor/inestabilidad
+                            const jitX = Math.random() * 2;
+                            const jitY = Math.random() * 2;
+                            ctx.fillText("CAG", x + jitX, cy + jitY);
+                        } else {
+                            ctx.fillText("CAG", x, cy);
+                        }
+                        x += 45;
+                        
+                        // Si se sale, hacer salto de línea simulado o bucle
+                        if(x > w - 100) { x = cx - 120; cy += 30; }
+                    }
+                    
+                    // Texto Diagnóstico
+                    ctx.fillStyle = "white"; ctx.font = "14px Inter";
+                    let diag = "NORMAL (<26 Repeticiones)";
+                    if(repeats > 26 && repeats < 36) diag = "PREMUTACIÓN (Inestable)";
+                    if(repeats >= 36) diag = "PENETRANCIA COMPLETA (Enfermedad Huntington)";
+                    
+                    ctx.fillText(`Nº REPETICIONES: ${repeats}`, w/2, h - 80);
+                    ctx.fillStyle = repeats >= 36 ? C.red : C.green;
+                    ctx.fillText(diag, w/2, h - 50);
+                }
+            }
+        },
+
+        {
+            id: 4,
+            title: "4. Genética de Poblaciones: Hardy-Weinberg",
+            icon: "fa-users",
+            controls: [
+                {
+                    id: 'freq',
+                    type: 'range',
+                    label: 'Frecuencia Alelo Dominante (p)',
+                    min: 1,
+                    max: 99,
+                    val: 50
+                },
+                {
+                    id: 'force',
+                    type: 'select',
+                    label: 'Fuerza Evolutiva',
+                    options: [
+                        'Equilibrio Hardy-Weinberg',
+                        'Selección Natural (Contra aa)',
+                        'Deriva Genética (Azar)',
+                        'Cuello de Botella'
+                    ]
+                },
+                {
+                    id: 'pop_size',
+                    type: 'select',
+                    label: 'Tamaño Población',
+                    options: ['Grande (n=1000)', 'Pequeña (n=50)']
+                }
+            ],
+            // Código R simplificado y limpio para evitar errores de sintaxis
+            code: (s) => {
+                const p = s.freq / 100;
+                const q = 1 - p;
+                return `<span class="com"># SIMULACIÓN POBLACIONAL (H-W)</span>
+<span class="str">p</span> <span class="fn"><-</span> ${p.toFixed(2)}
+<span class="str">q</span> <span class="fn"><-</span> ${q.toFixed(2)}
+
+<span class="com"># Genotipos Esperados (p^2 + 2pq + q^2 = 1)</span>
+<span class="str">AA</span> <span class="fn"><-</span> p^2  <span class="com"># ${(p*p).toFixed(2)} (Sano)</span>
+<span class="str">Aa</span> <span class="fn"><-</span> 2*p*q <span class="com"># ${(2*p*q).toFixed(2)} (Portador)</span>
+<span class="str">aa</span> <span class="fn"><-</span> q^2  <span class="com"># ${(q*q).toFixed(2)} (Afectado)</span>
+
+<span class="kwd">if</span>("${s.force}" == "Selección Natural (Contra aa)") {
+  <span class="str">aa_fitness</span> <span class="fn"><-</span> 0.0
+  <span class="fn">print</span>("Alelo 'a' tiende a desaparecer")
+}`;
+            },
+            // Teoría limpia sin etiquetas de citación que rompan el código
+            explain: (s) => {
+                if (s.force.includes('Equilibrio')) {
+                    return `<h3>Ley de Hardy-Weinberg</h3>
+                    <p>En ausencia de fuerzas evolutivas, las frecuencias alélicas permanecen constantes.</p>
+                    <p><b>p² + 2pq + q² = 1</b></p>`;
+                } else if (s.force.includes('Selección')) {
+                    return `<h3>Selección Natural</h3>
+                    <p>Los individuos <b>aa (rojos)</b> tienen menor eficacia biológica. El alelo recesivo disminuye generación tras generación.</p>`;
+                } else if (s.force.includes('Deriva')) {
+                    return `<h3>Deriva Genética</h3>
+                    <p>Cambios aleatorios en las frecuencias. En poblaciones pequeñas, un alelo puede fijarse o perderse por puro azar.</p>`;
+                } else {
+                    return `<h3>Cuello de Botella</h3>
+                    <p>Reducción drástica del tamaño poblacional (catástrofe). La nueva población tiene menor diversidad genética.</p>`;
+                }
+            },
+            stats: (s) => {
+                const p = s.freq / 100;
+                const q = 1 - p;
+                return [
+                    {l: 'AA (Azul)', v: (p*p*100).toFixed(1)+'%'},
+                    {l: 'Aa (Violeta)', v: (2*p*q*100).toFixed(1)+'%'},
+                    {l: 'aa (Rojo)', v: (q*q*100).toFixed(1)+'%'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w / 2, cy = h / 2;
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. Lógica de Simulación (Dinámica)
+                let p = s.freq / 100;
+
+                // Selección Natural: p aumenta con el tiempo (simulado)
+                if (s.force.includes('Selección')) {
+                    // El tiempo (f) hace que p tienda a 1 (eliminando aa)
+                    const time = Math.min(1, f * 0.002);
+                    p = p + (1 - p) * time * 0.8;
+                }
+                // Deriva Genética: p fluctúa aleatoriamente
+                else if (s.force.includes('Deriva')) {
+                    const noise = Math.sin(f * 0.05) * 0.15;
+                    p = Math.max(0.05, Math.min(0.95, p + noise));
+                }
+                // Cuello de Botella: Evento catastrófico cíclico
+                const isBottleneck = s.force.includes('Botella') && (f % 400 > 200);
+
+                const freqAA = p * p;
+                const freqAa = 2 * p * (1 - p);
+
+                // 2. Renderizado de Individuos (Grid)
+                const isSmall = s.pop_size.includes('Pequeña') || isBottleneck;
+                
+                const cols = isSmall ? 8 : 22;
+                const rows = isSmall ? 6 : 14;
+                const gap = isSmall ? 45 : 22;
+                const radius = isSmall ? 12 : 7;
+                
+                // Centrar grid
+                const startX = cx - ((cols - 1) * gap) / 2;
+                const startY = cy - ((rows - 1) * gap) / 2;
+
+                // Generación pseudo-aleatoria (cambia lentamente)
+                const generation = Math.floor(f / 30); 
+
+                let countAA=0, countAa=0, countaa=0;
+
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        // Semilla determinista para que no parpadee como loco
+                        const seed = Math.abs(Math.sin(i * 12.9898 + j * 78.233 + generation * 0.5));
+                        
+                        let color = C.red; // aa (base)
+                        let type = 2; // 0=AA, 1=Aa, 2=aa
+
+                        if (seed < freqAA) { color = C.blue; type = 0; countAA++; }
+                        else if (seed < freqAA + freqAa) { color = C.purple; type = 1; countAa++; }
+                        else { countaa++; }
+
+                        // Efecto visual de muerte por selección
+                        if (s.force.includes('Selección') && type === 2) {
+                            // Los aa parpadean o se ven tenues
+                            ctx.globalAlpha = 0.2 + Math.abs(Math.sin(f*0.1))*0.3;
+                        }
+
+                        const x = startX + i * gap;
+                        const y = startY + j * gap;
+
+                        ctx.fillStyle = color;
+                        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                // 3. Gráfico de Barras Inferior
+                const bw = 300; 
+                const bh = 12;
+                const by = h - 60;
+                const bx = cx - bw/2;
+
+                // Fondo
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(bx, by, bw, bh);
+                
+                // Barras proporcionales
+                const wAA = freqAA * bw;
+                const wAa = freqAa * bw;
+                const waa = bw - wAA - wAa; // Resto
+
+                ctx.fillStyle = C.blue; ctx.fillRect(bx, by, wAA, bh);
+                ctx.fillStyle = C.purple; ctx.fillRect(bx+wAA, by, wAa, bh);
+                ctx.fillStyle = C.red; ctx.fillRect(bx+wAA+wAa, by, waa, bh);
+
+                // Textos
+                ctx.fillStyle = "white"; ctx.font = "12px Inter"; ctx.textAlign = "center";
+                ctx.fillText(`p: ${p.toFixed(2)}  |  q: ${(1-p).toFixed(2)}`, cx, by - 10);
+                
+                // Alerta Cuello Botella
+                if(isBottleneck) {
+                    ctx.fillStyle = C.red; ctx.font = "bold 20px Inter";
+                    ctx.fillText("¡CATASTROFE!", cx, 50);
+                }
+            }
+        },
+
+        {
+            id: 5,
+            title: "5. Clasificación ACMG y Redes Colaborativas",
+            icon: "fa-tasks", // Icono de lista de tareas/criterios
+            controls: [
+                {
+                    id: 'ev_pvs',
+                    type: 'select',
+                    label: 'Criterio Muy Fuerte (PVS1)',
+                    options: ['Ninguno', 'PVS1: Null variant (LoF)']
+                },
+                {
+                    id: 'ev_pop',
+                    type: 'select',
+                    label: 'Datos Poblacionales (gnomAD)',
+                    options: ['Neutro', 'PM2: Ausente en controles', 'BA1: Frecuencia >5% (Benigna)']
+                },
+                {
+                    id: 'ev_comp',
+                    type: 'select',
+                    label: 'Predicción Computacional (PP3)',
+                    options: ['Neutro', 'PP3: Múltiples líneas de daño', 'BP4: Predicción benigna']
+                }
+            ],
+            // Código simulado estilo herramienta bioinformática (ej. Franklin/Varsome)
+            code: (s) => {
+                let score = 0;
+                let log = [];
+                
+                // Lógica simplificada ACMG (Suma de puntos)
+                if(s.ev_pvs.includes('PVS1')) { score += 8; log.push("PVS1 (+8): Loss of Function"); }
+                if(s.ev_pop.includes('PM2')) { score += 4; log.push("PM2 (+4): Rare variant"); }
+                if(s.ev_comp.includes('PP3')) { score += 2; log.push("PP3 (+2): In silico damaging"); }
+                
+                // Criterios Benignos (restan)
+                if(s.ev_pop.includes('BA1')) { score = -99; log.push("BA1: Stand-alone Benign"); }
+                if(s.ev_comp.includes('BP4')) { score -= 2; log.push("BP4 (-2): In silico benign"); }
+
+                let verdict = "VUS (Incierta)";
+                if(score >= 10) verdict = "PATHOGENIC (Clase 5)";
+                else if(score >= 6) verdict = "LIKELY PATHOGENIC (Clase 4)";
+                else if(score <= -5 || score == -99) verdict = "BENIGN (Clase 1)";
+
+                return `<span class="com"># ACMG AUTOMATED CLASSIFIER (v3.1)</span>
+<span class="kwd">import</span> ACMG_Guidelines
+
+<span class="com"># 1. Recopilación de Evidencias</span>
+<span class="str">variant</span> = "NM_000546:c.123del"
+<span class="str">pop_freq</span> = check_gnomAD(variant) <span class="com"># ${s.ev_pop.split(':')[0]}</span>
+<span class="str">insilico</span> = run_REVEL(variant)    <span class="com"># ${s.ev_comp.split(':')[0]}</span>
+
+<span class="com"># 2. Cálculo de Puntuación</span>
+<span class="com"># Evidencias activas: ${log.join(", ")}</span>
+<span class="str">total_score</span> = ${score == -99 ? "BENIGN_CUTOFF" : score}
+
+<span class="com"># 3. Veredicto Final</span>
+<span class="fn">print</span>("CLASIFICACIÓN: ${verdict}")`;
+            },
+            explain: (s) => {
+                return `<h3>El Semáforo de las Variantes </h3>
+                <p>Las variantes no son blancas o negras. Usamos los criterios del <b>ACMG</b> para clasificarlas en 5 niveles:</p>
+                <ul>
+                    <li><b style="color:${C.red}">Patogénica (Clase 5):</b> Causa la enfermedad con certeza. Requiere criterios muy fuertes (ej. <b>PVS1</b>: el gen está roto).</li>
+                    <li><b style="color:${C.orange}">VUS (Clase 3):</b> "Variante de Significado Incierto". El purgatorio genético. No hay suficientes datos. No se deben tomar decisiones clínicas drásticas.</li>
+                    <li><b style="color:${C.green}">Benigna (Clase 1):</b> Inocua. Si es muy común en la población (<b>BA1</b> en gnomAD), se descarta.</li>
+                </ul>
+                <p>Redes como <b>ClinVar</b> o <b>GeneMatcher</b> ayudan a compartir casos para resolver las VUS.</p>`;
+            },
+            stats: (s) => {
+                let cl = "3 (VUS)";
+                let risk = "Desconocido";
+                let color = "Naranja";
+
+                // Recalcular estado para stats
+                let score = 0;
+                if(s.ev_pvs.includes('PVS1')) score += 8;
+                if(s.ev_pop.includes('PM2')) score += 4;
+                if(s.ev_comp.includes('PP3')) score += 2;
+                if(s.ev_pop.includes('BA1')) score = -99;
+                if(s.ev_comp.includes('BP4')) score -= 2;
+
+                if(score >= 10) { cl="5 (Patogénica)"; risk=">99%"; color="Rojo"; }
+                else if(score >= 6) { cl="4 (Prob. Patogénica)"; risk=">90%"; color="Naranja/Rojo"; }
+                else if(score <= -5 || score == -99) { cl="1 (Benigna)"; risk="<0.1%"; color="Verde"; }
+
+                return [
+                    {l: 'Clase ACMG', v: cl},
+                    {l: 'Prob. Daño', v: risk},
+                    {l: 'Acción', v: cl.includes('5') ? 'Tratamiento' : 'Investigar'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0,0,w,h);
+
+                // --- 1. CALCULO DEL SCORE VISUAL ---
+                let rawScore = 0;
+                let activeCriteria = [];
+
+                if(s.ev_pvs.includes('PVS1')) { rawScore += 8; activeCriteria.push({t:"PVS1", c:C.red}); }
+                if(s.ev_pop.includes('PM2')) { rawScore += 4; activeCriteria.push({t:"PM2", c:C.orange}); }
+                if(s.ev_comp.includes('PP3')) { rawScore += 2; activeCriteria.push({t:"PP3", c:"#facc15"}); } // Amarillo
+                
+                if(s.ev_pop.includes('BA1')) { rawScore = -15; activeCriteria=[{t:"BA1", c:C.green}]; } // Fuerza bruta a benigno
+                if(s.ev_comp.includes('BP4')) { rawScore -= 2; if(rawScore > -15) activeCriteria.push({t:"BP4", c:C.green}); }
+
+                // Mapear score (-5 a 14) a posición X en pantalla (-200 a 200)
+                // Rango visual: Benigno (-10) a Patogénico (14)
+                let targetX = Math.max(-14, Math.min(14, rawScore)); 
+                targetX = (targetX / 14) * 200; // Escalar a px
+
+                // Animación suave de la aguja
+                // Usamos una variable global simulada o derivamos del frame para suavidad
+                // Para simplificar sin estado global persistente, usamos el target directo con un wobble
+                const wobble = Math.sin(f * 0.1) * 2;
+                const needleX = cx + targetX + wobble;
+
+                // --- 2. DIBUJAR TERMÓMETRO (GRADIENTE) ---
+                const barY = cy;
+                const barW = 500;
+                const barH = 30;
+
+                const grad = ctx.createLinearGradient(cx - barW/2, 0, cx + barW/2, 0);
+                grad.addColorStop(0, C.green);    // Benigno
+                grad.addColorStop(0.3, C.green);
+                grad.addColorStop(0.4, "#facc15"); // Prob. Benigno
+                grad.addColorStop(0.5, C.gray);    // VUS (Zona muerta)
+                grad.addColorStop(0.6, C.orange);  // Prob. Patogénico
+                grad.addColorStop(0.7, C.red);     // Patogénico
+                grad.addColorStop(1, "#7f1d1d");   // Muy Patogénico
+
+                // Barra fondo
+                ctx.fillStyle = "#1e293b"; 
+                ctx.roundRect(cx - barW/2 - 5, barY - 15 - 5, barW + 10, barH + 10, 20); ctx.fill();
+                
+                // Barra color
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 15; ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.roundRect(cx - barW/2, barY - 15, barW, barH, 15); ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Etiquetas de la barra
+                ctx.fillStyle = "white"; ctx.font = "bold 10px Inter"; ctx.textAlign = "center";
+                ctx.fillText("BENIGNA", cx - 200, barY + 30);
+                ctx.fillText("VUS", cx, barY + 30);
+                ctx.fillText("PATOGÉNICA", cx + 200, barY + 30);
+
+                // --- 3. AGUJA INDICADORA ---
+                ctx.fillStyle = "white"; 
+                ctx.beginPath();
+                ctx.moveTo(needleX, barY - 20);
+                ctx.lineTo(needleX - 10, barY - 40);
+                ctx.lineTo(needleX + 10, barY - 40);
+                ctx.fill();
+
+                // Texto de Puntuación sobre la aguja
+                let label = "VUS";
+                if(rawScore >= 10) label = "PATOGÉNICA";
+                else if(rawScore >= 6) label = "PROB. PATOGÉNICA";
+                else if(rawScore <= -5 || rawScore == -15) label = "BENIGNA";
+                
+                ctx.font = "bold 16px Inter";
+                ctx.fillText(label, needleX, barY - 50);
+                ctx.font = "12px Inter"; ctx.fillStyle = "#94a3b8";
+                ctx.fillText(`Score: ${rawScore == -15 ? 'BA1' : rawScore}`, needleX, barY - 65);
+
+                // --- 4. VISUALIZACIÓN DE EVIDENCIAS (Cajas que caen/orbitan) ---
+                // Dibujamos las evidencias activas como bloques debajo
+                const boxStartY = cy + 60;
+                
+                activeCriteria.forEach((crit, i) => {
+                    const bx = cx - ((activeCriteria.length * 60) / 2) + (i * 60) + 10;
+                    
+                    ctx.fillStyle = crit.c;
+                    ctx.shadowBlur = 10; ctx.shadowColor = crit.c;
+                    ctx.fillRect(bx, boxStartY, 40, 40);
+                    ctx.shadowBlur = 0;
+                    
+                    ctx.fillStyle = "rgba(255,255,255,0.3)";
+                    ctx.fillRect(bx, boxStartY, 40, 20); // Brillo superior
+
+                    ctx.fillStyle = "#1e293b"; ctx.font = "bold 12px Inter";
+                    ctx.fillText(crit.t, bx + 20, boxStartY + 25);
+                });
+
+                // --- 5. VISUALIZACIÓN CONTEXTUAL (Fondo dinámico) ---
+                // Si es PVS1 (Null variant), dibujamos una proteína rota en el fondo
+                if(s.ev_pvs.includes('PVS1')) {
+                    ctx.globalAlpha = 0.1;
+                    ctx.strokeStyle = C.red; ctx.lineWidth = 5; ctx.setLineDash([10, 10]);
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 100, cy - 100);
+                    ctx.lineTo(cx, cy - 100); // Mitad proteína
+                    ctx.stroke();
+                    ctx.fillText("STOP", cx + 20, cy - 100); // Proteína truncada
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 1;
+                }
+
+                // Si es PM2 (Población), dibujamos grid poblacional tenue
+                if(s.ev_pop.includes('PM2')) {
+                    ctx.globalAlpha = 0.1;
+                    ctx.fillStyle = C.gray;
+                    for(let i=0; i<20; i++) {
+                        ctx.beginPath(); ctx.arc(cx - 200 + i*20, cy - 120, 5, 0, Math.PI*2); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = C.orange; ctx.font = "10px Inter";
+                    ctx.fillText("Ausente en gnomAD", cx, cy - 140);
+                }
+            }
+        },
+
+        {
+            id: 6,
+            title: "6. Análisis de Splicing (Corte y Empalme)",
+            icon: "fa-cut",
+            controls: [
+                {
+                    id: 'site',
+                    type: 'select',
+                    label: 'Región Afectada',
+                    options: [
+                        'Wild Type (Normal)',
+                        'Sitio Donante (5\' SS - GT)',
+                        'Sitio Aceptor (3\' SS - AG)',
+                        'Sitio de Ramificación (Branch Point)',
+                        'Elemento ESE (Exónico)'
+                    ]
+                },
+                {
+                    id: 'tool',
+                    type: 'select',
+                    label: 'Algoritmo de Predicción',
+                    options: ['MaxEntScan (Entropía)', 'SpliceAI (Deep Learning)', 'Human Splicing Finder']
+                },
+                {
+                    id: 'speed',
+                    type: 'range',
+                    label: 'Velocidad Reacción',
+                    min: 0,
+                    max: 100,
+                    val: 30
+                }
+            ],
+            // Código simulado basado en herramientas reales mencionadas en el PDF (MaxEntScan/BDGP)
+            code: (s) => {
+                let seq = "CAG|gtaagt"; // Secuencia normal (Exon|Intron)
+                let score = "10.5 (Strong)";
+                let pred = "SPLICING_OK";
+                
+                if(s.site.includes('Donante')) { seq = "CAG|ttaagt"; score = "-2.1 (Weak)"; pred = "EXON_SKIPPING"; }
+                if(s.site.includes('ESE')) { seq = "Exon Mutado"; score = "SR-Protein Loss"; pred = "EXON_SKIPPING"; }
+
+                return `<span class="com"># SPLICING PREDICTION (MaxEntScan / NNSplice)</span>
+<span class="kwd">library</span>(splicingr)
+
+<span class="com"># 1. Análisis de Fuerza del Sitio (5' Splice Site)</span>
+<span class="str">wt_seq</span>  <span class="fn"><-</span> "CAG|gtaagt" <span class="com"># Consenso</span>
+<span class="str">mut_seq</span> <span class="fn"><-</span> "${seq.split('|').join('')}"
+
+<span class="com"># 2. Calcular Puntuación de Entropía Máxima</span>
+<span class="str">wt_score</span>  <span class="fn"><-</span> score5ss(wt_seq) <span class="com"># 10.5</span>
+<span class="str">mut_score</span> <span class="fn"><-</span> score5ss(mut_seq) <span class="com"># ${score.split(' ')[0]}</span>
+
+<span class="str">delta_score</span> <span class="fn"><-</span> (wt_score - mut_score) / wt_score
+
+<span class="kwd">if</span>(delta_score > 0.3) {
+  <span class="fn">print</span>("CRITICAL: ${pred}")
+  <span class="fn">print</span>("El snRNP U1 no puede unirse.")
+}`;
+            },
+            explain: (s) => {
+                if (s.site.includes('Normal')) {
+                    return `<h3>Mecanismo de Splicing</h3>
+                    <p>El pre-mRNA debe eliminar los intrones. El <b>Espliceosoma</b> (snRNPs U1, U2, etc.) reconoce señales clave:</p>
+                    <ul>
+                        <li><b>5' SS (GT):</b> Inicio del intrón. Reconocido por <b>U1</b>.</li>
+                        <li><b>3' SS (AG):</b> Fin del intrón.</li>
+                        <li><b>Branch Point (A):</b> Adenina clave para formar el lazo (lariat). Reconocido por <b>U2</b>.</li>
+                    </ul>`;
+                } else if (s.site.includes('ESE')) {
+                    return `<h3>Potenciadores Exónicos (ESE)</h3>
+                    <p>A veces la mutación no está en el corte, sino en medio del exón. Estas secuencias reclutan proteínas SR (splicing factors).</p>
+                    <p>Si rompes un ESE, el exón se vuelve "invisible" para la maquinaria y se salta (<b>Exon Skipping</b>).</p>`;
+                } else {
+                    return `<h3>Fallo de Reconocimiento </h3>
+                    <p>Una mutación en el sitio canónico (GT o AG) impide que U1 o U2F se unan.</p>
+                    <p><b>Consecuencia:</b> La célula ignora el sitio y busca el siguiente. Esto suele causar la pérdida del exón entero (Exon Skipping) o la retención del intrón, generando proteínas truncadas.</p>`;
+                }
+            },
+            stats: (s) => {
+                let effect = "Normal";
+                let size = "mRNA Maduro";
+                if(!s.site.includes('Normal')) { effect = "Exon Skipping"; size = "Truncado (-bp)"; }
+                
+                return [
+                    {l: 'Efecto', v: effect},
+                    {l: 'MaxEnt Score', v: s.site.includes('Normal') ? 'Alto' : 'Bajo'},
+                    {l: 'Proteína', v: s.site.includes('Normal') ? 'Funcional' : 'Rota'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                const isNormal = s.site.includes('Normal');
+                const speed = s.speed / 40;
+                const progress = (f * speed) % 200 / 200; // 0.0 a 1.0 ciclo
+
+                // COORDENADAS
+                const yPre = cy - 80;
+                const yPost = cy + 80;
+                const exW = 100;
+                const inW = 150;
+
+                // --- 1. DIBUJAR PRE-mRNA (Arriba) ---
+                ctx.font = "bold 14px Inter"; ctx.textAlign = "center";
+                
+                // Exón 1
+                ctx.fillStyle = C.blue; ctx.fillRect(cx - inW/2 - exW, yPre - 15, exW, 30);
+                ctx.fillStyle = "white"; ctx.fillText("EXÓN 1", cx - inW/2 - exW/2, yPre+5);
+                
+                // Intrón (Línea o Lazo)
+                // Animación del Lazo (Lariat) si es normal
+                ctx.strokeStyle = C.text_muted; ctx.lineWidth = 2;
+                
+                if (isNormal && progress > 0.3 && progress < 0.8) {
+                    // Formando el lazo (Loop)
+                    const loopH = Math.sin((progress-0.3)*Math.PI*2) * 80;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - inW/2, yPre);
+                    ctx.quadraticCurveTo(cx, yPre - loopH - 50, cx + inW/2 - 20, yPre); // Branch point
+                    ctx.stroke();
+                } else {
+                    // Línea recta
+                    ctx.beginPath(); ctx.moveTo(cx - inW/2, yPre); ctx.lineTo(cx + inW/2, yPre); ctx.stroke();
+                }
+
+                // Exón 2
+                ctx.fillStyle = C.blue; ctx.fillRect(cx + inW/2, yPre - 15, exW, 30);
+                ctx.fillStyle = "white"; ctx.fillText("EXÓN 2", cx + inW/2 + exW/2, yPre+5);
+
+                // --- 2. MAQUINARIA MOLECULAR (U1, U2) ---
+                // Solo aparecen si el sitio es correcto
+                
+                // U1 snRNP (Se une al sitio 5' - Izquierda del intrón)
+                let u1Bind = true;
+                if(s.site.includes('Donante') || s.site.includes('ESE')) u1Bind = false;
+
+                if (u1Bind) {
+                    const u1X = cx - inW/2;
+                    ctx.fillStyle = "#a855f7"; // Morado
+                    ctx.beginPath(); ctx.arc(u1X, yPre - 20, 15, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "white"; ctx.font="10px Arial"; ctx.fillText("U1", u1X, yPre-18);
+                } else {
+                    // Signo de fallo
+                    ctx.strokeStyle = C.red; ctx.lineWidth=3;
+                    const fx = cx - inW/2; const fy = yPre - 20;
+                    ctx.beginPath(); ctx.moveTo(fx-10, fy-10); ctx.lineTo(fx+10, fy+10); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(fx+10, fy-10); ctx.lineTo(fx-10, fy+10); ctx.stroke();
+                }
+
+                // U2 snRNP (Se une al Branch Point - Derecha)
+                if(isNormal || s.site.includes('Donante')) { // U2 intenta unirse aunque U1 falle
+                    const u2X = cx + inW/2 - 30;
+                    ctx.fillStyle = "#ec4899"; // Rosa
+                    ctx.beginPath(); ctx.arc(u2X, yPre - 20, 15, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "white"; ctx.font="10px Arial"; ctx.fillText("U2", u2X, yPre-18);
+                }
+
+                // Secuencias Clave
+                ctx.fillStyle = C.white; ctx.font = "10px Monospace";
+                ctx.fillText("GT", cx - inW/2 + 10, yPre + 25);
+                ctx.fillText("AG", cx + inW/2 - 10, yPre + 25);
+                ctx.fillStyle = C.orange; 
+                ctx.fillText("A", cx + inW/2 - 30, yPre + 25); // Branch Point
+
+                // --- 3. RESULTADO (Abajo) ---
+                
+                if (progress > 0.8) {
+                    ctx.fillStyle = "white"; ctx.font = "bold 12px Inter";
+                    
+                    if (isNormal) {
+                        // Splicing Correcto: Exones unidos
+                        ctx.fillText("mRNA MADURO (SPLICING CORRECTO)", cx, yPost - 30);
+                        
+                        ctx.fillStyle = C.blue;
+                        ctx.fillRect(cx - exW, yPost, exW*2, 30); // Fusión
+                        ctx.strokeStyle = "white"; ctx.beginPath(); ctx.moveTo(cx, yPost); ctx.lineTo(cx, yPost+30); ctx.stroke(); // Unión
+                        
+                        ctx.fillStyle = "white"; 
+                        ctx.fillText("EXÓN 1", cx - exW/2, yPost+20);
+                        ctx.fillText("EXÓN 2", cx + exW/2, yPost+20);
+                    } else {
+                        // Splicing Fallido
+                        ctx.fillStyle = C.red;
+                        ctx.fillText("ERROR: EXON SKIPPING O INTRÓN RETENIDO", cx, yPost - 30);
+                        
+                        if(s.site.includes('Donante') || s.site.includes('ESE')) {
+                            // Exon Skipping: Desaparece un exón (simulado dibujando solo uno o línea rota)
+                            ctx.fillStyle = C.blue;
+                            ctx.fillRect(cx - exW/2, yPost, exW, 30);
+                            ctx.fillStyle = "white"; ctx.fillText("EXÓN 1", cx, yPost+20);
+                            
+                            // Cruz roja sobre donde debería estar el exón 2 o la unión
+                            ctx.font = "20px Arial"; ctx.fillStyle = C.red;
+                            ctx.fillText("⚠ Frameshift", cx + 80, yPost + 20);
+                        }
+                    }
+                } else {
+                    // Procesando...
+                    ctx.fillStyle = C.text_muted; ctx.font = "italic 12px Inter";
+                    ctx.fillText("Procesando en Espliceosoma...", cx, yPost);
+                    
+                    // Barra de progreso
+                    ctx.fillStyle = "#333"; ctx.fillRect(cx-50, yPost+20, 100, 5);
+                    ctx.fillStyle = C.green; ctx.fillRect(cx-50, yPost+20, 100 * progress, 5);
+                }
+            }
+        },
+
+        {
+            id: 7,
+            title: "7. Genómica Comparada y Estructural",
+            icon: "fa-globe", // Icono global/mundo
+            controls: [
+                {
+                    id: 'mode',
+                    type: 'select',
+                    label: 'Herramienta',
+                    options: [
+                        'BLAST/Clustal (Alineamiento)',
+                        'AlphaFold2 (Estructura 3D)',
+                        'SIFT/PolyPhen (Predicción Patogenicidad)'
+                    ]
+                },
+                {
+                    id: 'species',
+                    type: 'select',
+                    label: 'Comparar con (Ortólogos)',
+                    options: ['Pan troglodytes (Chimpancé)', 'Mus musculus (Ratón)', 'Danio rerio (Pez Cebra)']
+                },
+                {
+                    id: 'identity',
+                    type: 'range',
+                    label: 'Umbral Conservación',
+                    min: 0,
+                    max: 100,
+                    val: 80
+                }
+            ],
+            // Código simulado de Bioinformática (Python/R)
+            code: (s) => {
+                if(s.mode.includes('AlphaFold')) {
+                    return `<span class="com"># PREDICCIÓN ESTRUCTURAL (AlphaFold2)</span>
+<span class="kwd">import</span> alphafold_model
+<span class="str">seq</span> = "MVLSPADKTNVKAAWGKVGAHAGEY..."
+
+<span class="com"># 1. Generar MSA (Multiple Sequence Alignment)</span>
+<span class="str">msa</span> = run_hhblits(seq)
+
+<span class="com"># 2. Inferencia de Red Neuronal</span>
+<span class="str">structure</span> = model.predict(msa)
+<span class="str">pLDDT</span> = structure.confidence_score
+
+<span class="kwd">if</span>(pLDDT > 90):
+    <span class="fn">print</span>("High Confidence: Structure highly accurate")
+    <span class="fn">save_pdb</span>("prediction.pdb")`;
+                }
+                
+                return `<span class="com"># ALINEAMIENTO DE SECUENCIAS (BLASTp)</span>
+<span class="kwd">library</span>(Biostrings)
+
+<span class="com"># 1. Cargar secuencias ortólogas</span>
+<span class="str">human</span> <span class="fn"><-</span> <span class="fn">readAAStringSet</span>("human_gene.fasta")
+<span class="str">query</span> <span class="fn"><-</span> <span class="fn">readAAStringSet</span>("${s.species.split(' ')[0]}.fasta")
+
+<span class="com"># 2. Alineamiento Global (Needleman-Wunsch)</span>
+<span class="str">aln</span> <span class="fn"><-</span> <span class="fn">pairwiseAlignment</span>(human, query)
+
+<span class="com"># 3. Cálculo de Identidad</span>
+<span class="str">pid</span> <span class="fn"><-</span> <span class="fn">pid</span>(aln) <span class="com"># % Identidad</span>
+<span class="com"># SIFT usa esto: Si un aminoácido está conservado en</span>
+<span class="com"># Ratón y Pez, cambiarlo en Humano es PATOGÉNICO.</span>
+<span class="fn">print</span>(paste("Identidad:", pid, "%"))`;
+            },
+            explain: (s) => {
+                if (s.mode.includes('AlphaFold')) {
+                    return `<h3>Genómica Estructural (AlphaFold2) </h3>
+                    <p>La función de una proteína depende de su forma 3D. AlphaFold usa IA para predecir cómo se pliega la cadena de aminoácidos.</p>
+                    <ul>
+                        <li><b>pLDDT:</b> Índice de confianza (0-100). Regiones azules (>90) son muy fiables; rojas (<50) suelen ser desordenadas.</li>
+                        <li><b>Utilidad:</b> Ver dónde cae una mutación en el espacio 3D (ej. en el centro activo).</li>
+                    </ul>`;
+                } else if (s.mode.includes('SIFT')) {
+                    return `<h3>Predicción de Patogenicidad (SIFT/PolyPhen)</h3>
+                    <p>¿Cómo sabe el ordenador si una mutación es mala? <b>Evolución.</b></p>
+                    <p>Si un aminoácido no ha cambiado en 400 millones de años (conservado desde peces a humanos), significa que es vital. Si lo cambias, SIFT predice <i>"Damaging"</i> (Intolerante).</p>`;
+                } else {
+                    return `<h3>Genómica Comparada (Ortólogos)</h3>
+                    <p>Comparamos nuestro ADN con otras especies para encontrar funciones.</p>
+                    <ul>
+                        <li><b>Ortólogos:</b> Mismo gen en distintas especies (ej. Insulina humana vs. Ratón).</li>
+                        <li><b>Parálogos:</b> Duplicación dentro de la misma especie (ej. Hemoglobina Alfa y Beta).</li>
+                        <li><b>Identidad:</b> % de letras idénticas. Con Chimpancé es ~98%, con Pez Cebra ~70%.</li>
+                    </ul>`;
+                }
+            },
+            stats: (s) => {
+                let iden = "99%";
+                let evol = "5 MYA"; // Millones de años
+                if(s.species.includes('Ratón')) { iden = "85%"; evol = "90 MYA"; }
+                if(s.species.includes('Pez')) { iden = "70%"; evol = "450 MYA"; }
+                
+                return [
+                    {l: 'Identidad', v: iden},
+                    {l: 'Divergencia', v: evol},
+                    {l: 'Algoritmo', v: s.mode.includes('Alpha') ? 'Red Neuronal' : 'Matriz BLOSUM62'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                // ===========================================
+                // MODO 1: ALINEAMIENTO / SIFT (2D)
+                // ===========================================
+                if (!s.mode.includes('AlphaFold')) {
+                    const zoom = 15; // px por residuo
+                    const offset = (f * 0.5) % 1000; // Desplazamiento automático (scrolling)
+                    
+                    // Definir tasa de mutación visual según especie
+                    let matchRate = 0.98;
+                    if(s.species.includes('Ratón')) matchRate = 0.85;
+                    if(s.species.includes('Pez')) matchRate = 0.70;
+
+                    const drawSeq = (y, label, isRef) => {
+                        ctx.fillStyle = "white"; ctx.font="12px Inter"; ctx.textAlign="right";
+                        ctx.fillText(label, 100, y+5);
+                        
+                        // Dibujar bloques de secuencia
+                        const startCol = Math.floor(offset / zoom);
+                        const endCol = startCol + Math.floor((w-120)/zoom);
+                        
+                        for(let i=0; i<40; i++) { // Dibujar 40 bloques visibles
+                            const pos = i + startCol;
+                            const x = 120 + i*zoom;
+                            
+                            // Determinismo visual: ¿Coincide esta posición?
+                            // Las posiciones funcionales (múltiplos de 5 o 7) suelen conservarse más
+                            let isConserved = false;
+                            const seed = Math.sin(pos * 999);
+                            
+                            // Lógica de conservación evolutiva
+                            if(isRef) {
+                                isConserved = true; // Humano es la referencia
+                            } else {
+                                // Si es la especie comparada, calculamos si mutó
+                                isConserved = (seed * 0.5 + 0.5) < matchRate;
+                                // Forzar conservación en "sitios activos"
+                                if(pos % 10 === 0) isConserved = true; 
+                            }
+                            
+                            ctx.fillStyle = isConserved ? C.blue : (isRef ? C.blue : C.red);
+                            
+                            // Si es modo SIFT, destacamos la conservación
+                            if(s.mode.includes('SIFT') && !isConserved && !isRef) {
+                                ctx.fillStyle = C.text_muted; // Lo no conservado es gris (tolerante)
+                            } else if (s.mode.includes('SIFT') && isConserved) {
+                                ctx.fillStyle = C.red; // Lo conservado es rojo (intolerante al cambio)
+                            }
+
+                            ctx.fillRect(x, y-10, zoom-2, 20);
+                            
+                            // Letra (Simulada)
+                            const letters = "ACDEFGHIKLMNPQRSTVWY";
+                            const char = letters.charAt(Math.abs(Math.floor(seed*20)) % 20);
+                            ctx.fillStyle = "white"; ctx.font="10px Monospace"; ctx.textAlign="center";
+                            
+                            // Si no hay conservación, cambiamos la letra en la especie
+                            let displayChar = char;
+                            if(!isRef && !isConserved) displayChar = letters.charAt((Math.abs(Math.floor(seed*20))+1) % 20);
+                            
+                            ctx.fillText(displayChar, x + zoom/2, y+4);
+                        }
+                    };
+
+                    // Humano (Query)
+                    drawSeq(cy - 40, "Homo sapiens", true);
+                    
+                    // Especie (Subject)
+                    drawSeq(cy + 40, s.species.split(' ')[0] + " " + s.species.split(' ')[1], false);
+                    
+                    // Líneas de conexión (Matches)
+                    const startCol = Math.floor(offset / zoom);
+                    for(let i=0; i<40; i++) {
+                        const pos = i + startCol;
+                        const x = 120 + i*zoom + zoom/2;
+                        const seed = Math.sin(pos * 999);
+                        const isMatch = (seed * 0.5 + 0.5) < matchRate || pos%10===0;
+                        
+                        if(isMatch) {
+                            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                            ctx.beginPath(); ctx.moveTo(x, cy-30); ctx.lineTo(x, cy+30); ctx.stroke();
+                        }
+                    }
+                    
+                    // Overlay explicativo SIFT
+                    if(s.mode.includes('SIFT')) {
+                        ctx.fillStyle = "white"; ctx.textAlign="center";
+                        ctx.fillText("ANÁLISIS EVOLUTIVO: ROJO = ALTAMENTE CONSERVADO (NO TOCAR)", w/2, h-20);
+                    }
+
+                } 
+                
+                // ===========================================
+                // MODO 2: ALPHAFOLD (3D)
+                // ===========================================
+                else {
+                    // Simulación de estructura de proteína rotando
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    
+                    // Rotación automática
+                    const rotX = f * 0.01;
+                    const rotY = f * 0.013;
+                    
+                    // Dibujar "Cinta" (Backbone)
+                    const len = 200;
+                    ctx.lineWidth = 4;
+                    ctx.lineCap = "round";
+                    
+                    // Simular coordenadas 3D de una hélice alfa y lámina beta
+                    let points = [];
+                    for(let i=0; i<len; i++) {
+                        const t = i * 0.1;
+                        // Forma helicoidal compleja
+                        let x = Math.sin(t) * 40 + Math.cos(t*0.5)*80;
+                        let y = (i - len/2) * 1.5;
+                        let z = Math.cos(t) * 40 + Math.sin(t*0.5)*80;
+                        
+                        // Rotar puntos
+                        let x2 = x * Math.cos(rotY) - z * Math.sin(rotY);
+                        let z2 = x * Math.sin(rotY) + z * Math.cos(rotY);
+                        let y2 = y * Math.cos(rotX) - z2 * Math.sin(rotX);
+                        
+                        // pLDDT Score (Confianza) simulado por posición
+                        // Los extremos suelen tener baja confianza (naranja), el centro alta (azul)
+                        let conf = 100 - Math.abs(i - len/2);
+                        let col = C.blue; // High confidence
+                        if(conf < 60) col = "#facc15"; // Yellow
+                        if(conf < 40) col = C.orange; // Low
+                        
+                        points.push({x: x2, y: y2, c: col});
+                    }
+                    
+                    // Dibujar trazos
+                    for(let i=0; i<points.length-1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i+1];
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = p1.c;
+                        
+                        // Efecto profundidad (z-buffering simple por grosor)
+                        // No tenemos Z real, pero simulamos brillo
+                        ctx.stroke();
+                    }
+                    
+                    // Etiquetas AlphaFold
+                    ctx.restore();
+                    ctx.fillStyle = "white"; ctx.textAlign="left"; ctx.font="12px Inter";
+                    ctx.fillText("pLDDT (Confianza):", 20, h-60);
+                    
+                    // Leyenda colores
+                    const legend = (c, t, y) => {
+                        ctx.fillStyle = c; ctx.fillRect(20, y, 10, 10);
+                        ctx.fillStyle = C.text_muted; ctx.fillText(t, 40, y+9);
+                    };
+                    legend(C.blue, "Muy Alta (>90)", h-40);
+                    legend("#facc15", "Alta (70-90)", h-25);
+                    legend(C.orange, "Baja (<50)", h-10);
+                    
+                    ctx.fillStyle = "white"; ctx.textAlign="center"; ctx.font="bold 16px Inter";
+                    ctx.fillText("PREDICCIÓN ESTRUCTURAL (AlphaFold2)", w/2, 40);
+                }
+            }
+        },
+
+       {
+            id: 8,
+            title: "8. Estructura Cromosómica: TADs y Citogenética",
+            icon: "fa-dna",
+            controls: [
+                {
+                    id: 'mode',
+                    type: 'select',
+                    label: 'Nivel de Análisis',
+                    options: [
+                        'Cromatina 3D (TADs & Loops)',
+                        'Cariotipo: Numérico',
+                        'Cariotipo: Estructural'
+                    ]
+                },
+                {
+                    id: 'condition',
+                    type: 'select',
+                    label: 'Patología',
+                    options: [
+                        'Normal / Euploide',
+                        'Trisomía 21 (S. Down)',
+                        'Monosomía X (S. Turner)',
+                        'Translocación Robertsoniana (der14;21)',
+                        'TADopatía (Polidactilia/Disrupción)'
+                    ]
+                },
+                {
+                    id: 'zoom',
+                    type: 'range',
+                    label: 'Condensación',
+                    min: 1,
+                    max: 100,
+                    val: 50
+                }
+            ],
+            code: (s) => {
+                // Generador dinámico de nomenclatura ISCN 2020
+                let iscn = "46,XY";
+                let diag = "Normal";
+                
+                if (s.condition.includes('Down')) { iscn = "47,XY,+21"; diag = "TRISOMÍA 21 LIBRE"; }
+                if (s.condition.includes('Turner')) { iscn = "45,X"; diag = "MONOSOMÍA X"; }
+                if (s.condition.includes('Robertsoniana')) { iscn = "45,XY,der(14;21)(q10;q10)"; diag = "PORTADOR TRANSLOCACIÓN"; }
+                
+                if (s.mode.includes('Cromatina')) {
+                    return `<span class="com"># Hi-C CONTACT MAP ANALYSIS</span>
+<span class="kwd">library</span>(InteractionSet)
+<span class="str">tad_bounds</span> <span class="fn"><-</span> <span class="fn">findBoundaries</span>(hic_data, method="insulation")
+<span class="com"># Score de Aislamiento (Insulation Score)</span>
+<span class="str">ctcf_score</span> <span class="fn"><-</span> ${s.condition.includes('Disrupción') ? '0.12 (LOW)' : '0.95 (HIGH)'}
+
+<span class="kwd">if</span>(ctcf_score < 0.4) {
+   <span class="fn">print</span>("CRITICAL: TAD BOUNDARY LOSS")
+   <span class="fn">print</span>("MECHANISM: Enhancer Hijacking")
+   <span class="fn">print</span>("PHENOTYPE: Ectopic Expression (e.g. Polydactyly)")
+}`;
+                }
+
+                return `<span class="com"># CYTOGENOMIC ANALYSIS (ISCN 2020)</span>
+<span class="str">karyotype</span> <span class="fn"><-</span> "${iscn}"
+<span class="str">bands</span> <span class="fn"><-</span> "G-Banding (550)"
+
+<span class="fn">visualize_karyotype</span>(karyotype)
+<span class="fn">check_aneuploidy</span>()
+<span class="com"># DIAGNÓSTICO: ${diag}</span>`;
+            },
+            explain: (s) => {
+                if (s.mode.includes('Cromatina')) {
+                    return `<h3>Arquitectura Nuclear (TADs)</h3>
+                    <p>El genoma se organiza en <b>Dominios Topológicamente Asociados</b>. Las proteínas <b>CTCF</b> (paredes naranjas) actúan como aislantes, impidiendo que un Enhancer active el gen equivocado.</p>
+                    <p><b>TADopatía:</b> Si se borra la frontera (CTCF), el Enhancer "invade" el dominio vecino y activa un gen que debería estar apagado (ej. Polidactilia, genes WNT).</p>`;
+                } else if (s.condition.includes('Robertsoniana')) {
+                    return `<h3>Translocación Robertsoniana</h3>
+                    <p>Fusión de dos cromosomas acrocéntricos (13, 14, 15, 21, 22) por el centrómero.</p>
+                    <p>Se pierden los brazos cortos (p), pero como solo tienen genes ribosomales redundantes, el portador es sano (tiene 45 cromosomas). <b>Riesgo:</b> Gametos desequilibrados (S. Down por translocación).</p>`;
+                } else {
+                    return `<h3>Aneuploidías Numéricas</h3>
+                    <p>Error en la segregación durante la meiosis (No Disyunción).</p>
+                    <ul>
+                        <li><b>Trisomía 21:</b> Tres copias del Chr21. Causa principal de discapacidad intelectual genética.</li>
+                        <li><b>Monosomía X:</b> Ausencia de un cromosoma sexual. S. Turner (45,X).</li>
+                    </ul>`;
+                }
+            },
+            stats: (s) => {
+                const map = {
+                    'Normal': {n:'46', t:'Euploide'},
+                    'Down': {n:'47', t:'Trisomía'},
+                    'Turner': {n:'45', t:'Monosomía'},
+                    'Robert': {n:'45', t:'Translocación Eq.'},
+                    'TAD': {n:'46', t:'Estructural Micro'}
+                };
+                let k = 'Normal';
+                if(s.condition.includes('Down')) k='Down';
+                if(s.condition.includes('Turner')) k='Turner';
+                if(s.condition.includes('Robertson')) k='Robert';
+                if(s.condition.includes('TAD')) k='TAD';
+                
+                return [
+                    {l: 'Cromosomas', v: map[k].n},
+                    {l: 'Tipo', v: map[k].t},
+                    {l: 'Técnica', v: s.mode.includes('Cromatina') ? 'Hi-C / 3C' : 'Cariotipo Banda G'}
+                ];
+            },
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                // --- MOTOR DE DIBUJO DE CROMOSOMAS ORGÁNICOS ---
+                const drawChromosome = (x, y, scale, type, bandsSeed, label) => {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.scale(scale, scale);
+                    
+                    // Definir morfología según tipo
+                    // type: 'M' (Metacentrico), 'A' (Acrocentrico - brazos p muy cortos), 'Sub' (Submetacentrico)
+                    let pLen = 60; let qLen = 80;
+                    if(type === 'A') { pLen = 15; qLen = 70; } // Acrocéntrico (ej. 21, 14)
+                    if(type === 'Sub') { pLen = 40; qLen = 90; } // Submetacéntrico (ej. X)
+
+                    // Efecto de respiración orgánica
+                    const breathe = Math.sin(f * 0.03 + x) * 2;
+                    
+                    // Función para dibujar una cromátida
+                    const drawChromatid = (side) => { // side: -1 (izq), 1 (der)
+                        ctx.beginPath();
+                        // Brazo P (Superior)
+                        ctx.moveTo(0, 0); // Centro
+                        ctx.bezierCurveTo(side*15, -10, side*20, -pLen/2, side*10, -pLen); // Curva externa
+                        ctx.bezierCurveTo(side*5, -pLen-5, 0, -pLen, 0, -pLen + 5); // Punta redondeada
+                        ctx.lineTo(0, 0);
+                        
+                        // Brazo Q (Inferior)
+                        ctx.moveTo(0, 0);
+                        ctx.bezierCurveTo(side*15, 10, side*22, qLen/2, side*12, qLen + breathe); // Curva externa
+                        ctx.bezierCurveTo(side*5, qLen+5+breathe, 0, qLen+breathe, 0, qLen - 5 + breathe); // Punta
+                        ctx.lineTo(0, 0);
+                        
+                        ctx.fillStyle = C.blue;
+                        // Degradado sutil para volumen
+                        const grad = ctx.createLinearGradient(side*20, -pLen, 0, qLen);
+                        grad.addColorStop(0, "#3b82f6");
+                        grad.addColorStop(0.5, "#2563eb");
+                        grad.addColorStop(1, "#1d4ed8");
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        
+                        // --- BANDAS G (PATRÓN DE GIEMSA) ---
+                        ctx.globalCompositeOperation = 'source-atop'; // Dibujar solo dentro del cromosoma
+                        const numBands = 12;
+                        for(let i=0; i<numBands; i++) {
+                            // Generar bandas usando la semilla única del cromosoma
+                            const bandY = -pLen + (i * (pLen+qLen)/numBands);
+                            if(Math.abs(bandY) < 5) continue; // Saltar centrómero
+                            
+                            const isDark = Math.sin(bandsSeed * i * 132.1) > 0;
+                            if(isDark) {
+                                ctx.fillStyle = "rgba(0,0,0,0.4)"; // Banda oscura
+                                ctx.fillRect(-20, bandY, 40, (pLen+qLen)/numBands * 0.6);
+                            }
+                        }
+                        ctx.globalCompositeOperation = 'source-over';
+                        
+                        // Contorno sutil
+                        ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1; ctx.stroke();
+                    };
+
+                    drawChromatid(-1); // Izquierda
+                    drawChromatid(1);  // Derecha
+
+                    // Centrómero Constricción
+                    ctx.fillStyle = "#eff6ff"; ctx.shadowBlur=10; ctx.shadowColor="white";
+                    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+                    
+                    // Etiqueta
+                    if(label) {
+                        ctx.fillStyle = "white"; ctx.font="bold 12px Inter"; ctx.textAlign="center";
+                        ctx.fillText(label, 0, qLen + 25);
+                    }
+
+                    ctx.restore();
+                };
+
+                // ===============================================
+                // MODO 1: CROMATINA 3D (TADs Dinámicos)
+                // ===============================================
+                if (s.mode.includes('Cromatina') || s.condition.includes('TAD')) {
+                    // Simulación de Fibra de Cromatina
+                    const zoom = 1.0;
+                    const pathW = Math.min(600, w*0.8);
+                    const startX = cx - pathW/2;
+                    const tadH = 150;
+                    
+                    ctx.save();
+                    ctx.translate(0, cy + 50);
+
+                    // Dibujar línea base (Fibra de cromatina)
+                    ctx.strokeStyle = C.gray; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(startX - 50, 0); ctx.lineTo(startX + pathW + 50, 0); ctx.stroke();
+
+                    // Definir 2 Dominios TAD
+                    // TAD 1: Inactivo/Neutro
+                    // TAD 2: Contiene el GEN (Objetivo)
+                    // TAD 3: Contiene el ENHANCER (Agresor)
+                    
+                    // En estado normal: TAD 2 y TAD 3 están separados por una frontera (CTCF)
+                    // En disrupción: La frontera desaparece, y el Enhancer de TAD 3 toca el Gen de TAD 2
+                    
+                    const isDisrupted = s.condition.includes('Disrupción');
+                    
+                    // Función para dibujar un bucle TAD
+                    const drawLoop = (x, width, height, color, label) => {
+                        ctx.strokeStyle = color; ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        // Curva Bezier para el bucle
+                        const ctrlY = -height * 1.5;
+                        ctx.bezierCurveTo(x, ctrlY, x+width, ctrlY, x+width, 0);
+                        ctx.stroke();
+                        
+                        // Label del dominio
+                        ctx.fillStyle = color; ctx.font="10px Inter"; ctx.fillText(label, x + width/2, -height - 10);
+                    };
+
+                    // DIBUJAR ESTRUCTURA
+                    // TAD A (Gen WNT2 - Pata)
+                    drawLoop(startX + 100, 150, 100, C.blue, "TAD A (Gen WNT2)");
+                    
+                    // El Gen está en el TAD A
+                    const geneX = startX + 175;
+                    // Si hay disrupción, el gen se enciende (brilla)
+                    const geneActive = isDisrupted && (Math.floor(f/10)%2===0); // Parpadeo rápido si activado
+                    ctx.fillStyle = geneActive ? "#a3e635" : C.blue;
+                    if(geneActive) { ctx.shadowBlur=20; ctx.shadowColor="#a3e635"; }
+                    ctx.fillRect(geneX, -80, 20, 20); ctx.shadowBlur=0;
+                    ctx.fillStyle="white"; ctx.fillText("GEN", geneX+10, -90);
+
+                    // FRONTERA (CTCF)
+                    const boundaryX = startX + 250;
+                    if(!isDisrupted) {
+                        // Dibujar Muro Aislante
+                        ctx.fillStyle = C.orange; ctx.shadowBlur=10; ctx.shadowColor=C.orange;
+                        ctx.fillRect(boundaryX-5, -60, 10, 60); ctx.shadowBlur=0;
+                        ctx.fillStyle="white"; ctx.fillText("CTCF", boundaryX, 15);
+                        
+                        // TAD B (Enhancer ZRS) separado
+                        drawLoop(boundaryX, 150, 100, C.purple, "TAD B (Enhancer ZRS)");
+                        
+                        // Enhancer en su sitio
+                        const enhX = boundaryX + 75;
+                        ctx.fillStyle = "#facc15"; ctx.beginPath(); ctx.arc(enhX, -80, 8, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle="white"; ctx.fillText("Enhancer", enhX, -95);
+
+                    } else {
+                        // FRONTERA ROTA
+                        // Dibujar TAD FUSIONADO (TAD A + TAD B unidos)
+                        ctx.strokeStyle = C.red; ctx.lineWidth = 4; ctx.setLineDash([5,5]);
+                        ctx.beginPath();
+                        ctx.moveTo(startX + 100, 0);
+                        ctx.bezierCurveTo(startX + 100, -250, startX + 400, -250, startX + 400, 0);
+                        ctx.stroke(); ctx.setLineDash([]);
+                        
+                        ctx.fillStyle = C.red; ctx.fillText("NEO-TAD PATOLÓGICO", cx, -180);
+
+                        // Enhancer viajero (Hijacking)
+                        // Animación: El enhancer se mueve hacia el gen
+                        const t = (Math.sin(f*0.05) + 1) / 2;
+                        const enhStartX = startX + 325;
+                        const enhCurrentX = enhStartX + (geneX - enhStartX + 20) * t; // Se acerca al gen
+                        const enhCurrentY = -80 + Math.sin(f*0.1)*20; // Movimiento errático
+
+                        ctx.fillStyle = "#facc15"; ctx.shadowBlur=15; ctx.shadowColor="#facc15";
+                        ctx.beginPath(); ctx.arc(enhCurrentX, enhCurrentY, 10, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+                        
+                        // Rayo de activación cuando toca
+                        if(t > 0.8) {
+                            ctx.strokeStyle = "#facc15"; ctx.lineWidth=3;
+                            ctx.beginPath(); ctx.moveTo(enhCurrentX, enhCurrentY); ctx.lineTo(geneX+10, -70); ctx.stroke();
+                        }
+                    }
+
+                    ctx.restore();
+                }
+
+                // ===============================================
+                // MODO 2: CARIOTIPO (Numérico/Estructural)
+                // ===============================================
+                else {
+                    // Definir cromosomas a mostrar según patología
+                    const spacing = 100;
+                    
+                    if (s.condition.includes('Down')) {
+                        // Trisomía 21 (3 Acrocéntricos pequeños)
+                        drawChromosome(cx - spacing, cy, 0.8, 'A', 21, "Chr 21");
+                        drawChromosome(cx, cy, 0.8, 'A', 21.1, "Chr 21");
+                        drawChromosome(cx + spacing, cy, 0.8, 'A', 21.2, "Chr 21 (+)");
+                        
+                        ctx.fillStyle = C.red; ctx.font="bold 20px Inter"; ctx.textAlign="center";
+                        ctx.fillText("TRISOMÍA 21 (NO DISYUNCIÓN)", cx, cy - 100);
+                    }
+                    else if (s.condition.includes('Turner')) {
+                        // Monosomía X (1 Submetacéntrico mediano)
+                        drawChromosome(cx - 50, cy, 1.0, 'Sub', 23, "Chr X");
+                        
+                        // Sombra del ausente
+                        ctx.strokeStyle = C.text_muted; ctx.lineWidth=2; ctx.setLineDash([10, 10]);
+                        ctx.strokeRect(cx + 30, cy - 60, 40, 140); ctx.setLineDash([]);
+                        ctx.fillStyle = C.text_muted; ctx.fillText("AUSENTE", cx+50, cy);
+                        
+                        ctx.fillStyle = "#ec4899"; ctx.font="bold 20px Inter"; ctx.textAlign="center";
+                        ctx.fillText("MONOSOMÍA X (45,X)", cx, cy - 100);
+                    }
+                    else if (s.condition.includes('Robertsoniana')) {
+                        // Fusión 14/21
+                        // 14 Normal (Acrocéntrico mediano)
+                        drawChromosome(cx - 120, cy, 0.9, 'A', 14, "Chr 14");
+                        // 21 Normal (Acrocéntrico pequeño)
+                        drawChromosome(cx + 120, cy, 0.7, 'A', 21, "Chr 21");
+                        
+                        // TRANSLOCADO al centro
+                        ctx.save();
+                        ctx.translate(cx, cy);
+                        ctx.scale(1.0, 1.0);
+                        
+                        // Dibujar Brazo Q del 14 (Abajo grande)
+                        ctx.beginPath();
+                        ctx.moveTo(0,0);
+                        ctx.bezierCurveTo(-15, 10, -20, 40, -10, 80); // Q14
+                        ctx.bezierCurveTo(0, 85, 10, 80, 20, 40);
+                        ctx.lineTo(0,0);
+                        ctx.fillStyle = C.purple; ctx.fill();
+                        
+                        // Dibujar Brazo Q del 21 (Arriba invertido, actuando como p)
+                        ctx.beginPath();
+                        ctx.moveTo(0,0);
+                        ctx.bezierCurveTo(-10, -5, -15, -20, -8, -50); // Q21 invertido
+                        ctx.bezierCurveTo(0, -55, 8, -50, 15, -20);
+                        ctx.lineTo(0,0);
+                        ctx.fillStyle = C.orange; ctx.fill();
+                        
+                        // Centrómero compartido
+                        ctx.fillStyle="white"; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+                        ctx.restore();
+                        
+                        ctx.fillStyle = "white"; ctx.textAlign="center"; ctx.fillText("der(14;21)", cx, cy+100);
+                        ctx.fillStyle = C.blue; ctx.font="bold 16px Inter";
+                        ctx.fillText("FUSIÓN CÉNTRICA (PÉRDIDA BRAZOS CORTOS)", cx, cy - 100);
+                    }
+                    else {
+                        // Normal
+                        drawChromosome(cx - 40, cy, 1.0, 'M', 1, "Chr 1");
+                        drawChromosome(cx + 40, cy, 1.0, 'M', 2, "Chr 1 (Homólogo)");
+                    }
+                }
+            }
+        },
+
+        {
+            id: 9,
+            title: "9. Epigenética: Metilación e Imprinting",
+            icon: "fa-toggle-off",
+            controls: [
+                {id: 'mech', type: 'select', label: 'Mecanismo', options: ['Metilación DNA / Histonas', 'Imprinting (Chr 15)', 'Inactivación X']},
+                {id: 'condition', type: 'select', label: 'Patología', options: ['Fisiológico (Normal)', 'S. Rett (MeCP2)', 'S. Prader-Willi', 'S. Angelman']},
+                {id: 'drug', type: 'select', label: 'Fármaco', options: ['Ninguno', 'Inhibidor HDAC', 'Azacitidina']}
+            ],
+            code: (s) => `<span class="com"># EPIGENETIC STATUS</span>\n<span class="fn">check_methylation</span>("${s.condition}")`,
+            explain: (s) => `<h3>${s.mech}</h3><p>Regulación de la expresión génica sin cambiar la secuencia.</p>`,
+            stats: (s) => [{l:'Estado', v:s.condition.includes('Rett')?'Desregulado':'Estable'}, {l:'Expresión', v:'Variable'}],
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+
+                // MODO 1: IMPRINTING
+                if (s.mech.includes('Imprinting')) {
+                    const drawChr = (x, col, lbl, active) => {
+                        ctx.fillStyle = col;
+                        ctx.roundRect(x-15, cy-70, 30, 140, 8); ctx.fill();
+                        
+                        // Región Genética
+                        const regY = cy;
+                        ctx.fillStyle = active ? C.green : C.gray;
+                        ctx.fillRect(x-12, regY, 24, 20);
+                        
+                        // Icono estado
+                        if(active) {
+                            ctx.shadowBlur=10; ctx.shadowColor=C.green; ctx.fillStyle=C.green;
+                            ctx.fillRect(x-12, regY, 24, 20); ctx.shadowBlur=0;
+                        } else {
+                            ctx.fillStyle=C.red; ctx.beginPath(); ctx.arc(x, regY+10, 5, 0, Math.PI*2); ctx.fill(); // Candado
+                        }
+                        ctx.fillStyle="white"; ctx.textAlign="center"; ctx.font="10px Arial";
+                        ctx.fillText(lbl, x, cy-80);
+                    };
+
+                    // Determinar estados según enfermedad
+                    let patOn=true, matOn=true;
+                    if(s.condition.includes('Prader')) patOn=false; // Falta padre
+                    if(s.condition.includes('Angel')) matOn=false; // Falta madre
+                    
+                    // En Imprinting normal: Pat=ON (SNRPN), Mat=OFF (SNRPN) - Simplificación visual
+                    // Aquí mostramos la región crítica:
+                    drawChr(cx - 40, C.blue, "PATERNO", patOn);
+                    drawChr(cx + 40, "#ec4899", "MATERNO", matOn);
+
+                    ctx.fillStyle="white"; ctx.font="14px Inter"; 
+                    ctx.fillText(s.condition.toUpperCase(), cx, cy+100);
+                } 
+                
+                // MODO 2: METILACIÓN (Cadena nucleosomas)
+                else {
+                    let isOpen = true;
+                    if(s.condition.includes('Rett') || s.mech.includes('Inactivación')) isOpen = false;
+                    if(s.drug.includes('Inhibidor') || s.drug.includes('Aza')) isOpen = true;
+
+                    // Calcular espaciado responsivo
+                    const beads = 6; // Menos bolas para que quepan mejor
+                    // Espaciado dinámico: Máximo 80, mínimo ajustado al ancho
+                    const spacing = Math.min(isOpen ? 80 : 35, w / (beads + 2)); 
+                    const totalW = (beads-1) * spacing;
+                    
+                    ctx.save();
+                    ctx.translate(cx - totalW/2, cy); // Centrar la cadena perfectamente
+                    
+                    ctx.strokeStyle = C.white; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(0, 0);
+
+                    for(let i=0; i<beads; i++) {
+                        const x = i * spacing;
+                        const y = Math.sin(i + f*0.05) * (isOpen ? 15 : 2);
+                        
+                        ctx.lineTo(x, y);
+                        
+                        // Histona
+                        ctx.fillStyle = C.orange;
+                        ctx.beginPath(); ctx.arc(x, y, spacing*0.2, 0, Math.PI*2); ctx.fill();
+                        
+                        // Marcas (Me / Ac)
+                        const markCol = isOpen ? C.green : C.red;
+                        ctx.fillStyle = markCol; 
+                        ctx.beginPath(); ctx.arc(x, y-spacing*0.3, 4, 0, Math.PI*2); ctx.fill();
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.fillStyle = "white"; ctx.font = "16px Inter"; ctx.textAlign="center";
+                    ctx.fillText(isOpen ? "EUCROMATINA (ON)" : "HETEROCROMATINA (OFF)", cx, cy + 80);
+                }
+            }
+        },
+
+        {
+            id: 10,
+            title: "10. Mosaicismo y Genoma Mitocondrial",
+            icon: "fa-bacteria",
+            controls: [
+                {id: 'mode', type: 'select', label: 'Tipo', options: ['Mosaicismo (Tejido)', 'Mitocondrial (Heteroplasmia)']},
+                {id: 'lev', type: 'range', label: 'Carga Mutacional (%)', min: 0, max: 100, val: 30},
+                {id: 'tiss', type: 'select', label: 'Origen', options: ['Somático', 'Germinal']}
+            ],
+            // Código simulado para NGS y análisis mitocondrial
+            code: (s) => {
+                const frac = s.lev/100;
+                if(s.mode.includes('Mito')) return `<span class="com"># mtDNA ANALYSIS</span>\n<span class="str">depth</span> <- 5000\n<span class="str">mut_reads</span> <- ${Math.floor(5000*frac)}\n<span class="str">heteroplasmy</span> <- ${frac}\n<span class="kwd">if</span>(heteroplasmy > 0.7) print("UMBRAL PATOLÓGICO SUPERADO")`;
+                return `<span class="com"># MOSAICISM DETECTION</span>\n<span class="str">vaf</span> <- ${frac}\n<span class="kwd">if</span>(vaf > 0 && vaf < 0.5) print("MOSAICO DETECTADO (${s.tiss})")`;
+            },
+            explain: (s) => s.mode.includes('Mito') ? 
+                `<h3>Heteroplasmia Mitocondrial</h3><p>Mezcla de mitocondrias sanas (verdes) y mutadas (rojas). El <b>Efecto Umbral</b> (>70%) determina si aparece la enfermedad.</p>` : 
+                `<h3>Mosaicismo</h3><p>Coexistencia de líneas celulares con distinto genotipo en un mismo individuo. La distribución puede ser por parches.</p>`,
+            stats: (s) => [{l:'Carga', v:s.lev+'%'}, {l:'Fenotipo', v: (s.lev > (s.mode.includes('Mito')?70:20)) ? 'Afectado' : 'Normal/Leve'}],
+            
+            // --- MOTOR DE RENDERIZADO RESPONSIVO ---
+            render: (ctx, w, h, f, s) => {
+                const cx = w/2, cy = h/2;
+                ctx.clearRect(0, 0, w, h);
+                const load = s.lev / 100;
+
+                // MODO 1: MOSAICISMO (Tejido celular)
+                if (s.mode.includes('Mosaicismo')) {
+                    // Calculamos columnas/filas según el tamaño real de la pantalla
+                    const size = 30; // Tamaño de célula
+                    const cols = Math.ceil(w / size) + 2;
+                    const rows = Math.ceil(h / size) + 2;
+                    
+                    // Centrar el grid restando la mitad del tamaño total
+                    const startX = -(cols * size - w) / 2;
+                    const startY = -(rows * size - h) / 2;
+
+                    for (let i = 0; i < cols; i++) {
+                        for (let j = 0; j < rows; j++) {
+                            const x = startX + i * size;
+                            const y = startY + j * size;
+                            
+                            // Ruido determinista para crear "parches" clonales
+                            // Usamos Math.sin con coordenadas para que no parpadee aleatoriamente
+                            const noise = (Math.sin(i * 0.2) + Math.cos(j * 0.2)) * 0.5 + 0.5;
+                            
+                            // Decidir si es mutante basándonos en el slider (load) y el patrón de ruido
+                            // Si load es bajo, solo las zonas de 'ruido' muy alto se pintan (parches pequeños)
+                            let isMut = false;
+                            if (s.tiss === 'Germinal') {
+                                isMut = Math.random() < load; // Germinal/Sangre suele ser más disperso
+                            } else {
+                                // Somático tiende a formar manchas/clones
+                                isMut = (noise + (load - 0.5)) > 0.8; 
+                            }
+                            
+                            // Asegurar que el total visual se aproxime al slider (corrección simple)
+                            if (Math.random() < 0.1) isMut = Math.random() < load; 
+
+                            ctx.fillStyle = isMut ? C.red : "#1e293b"; // Rojo vs Azul Oscuro
+                            ctx.strokeStyle = "#0f172a";
+                            
+                            ctx.beginPath();
+                            // Dibujar hexágono o círculo apretado
+                            ctx.arc(x, y, size * 0.45, 0, Math.PI * 2);
+                            ctx.fill();
+                            
+                            // Brillo en mutantes
+                            if(isMut && Math.random() > 0.95) {
+                                ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x-5, y-5, 2, 0, 7); ctx.fill();
+                            }
+                        }
+                    }
+                    
+                    // Efecto Microscopio (Vignette negro alrededor)
+                    const grad = ctx.createRadialGradient(cx, cy, Math.min(w,h)*0.3, cx, cy, Math.min(w,h)*0.8);
+                    grad.addColorStop(0, "transparent");
+                    grad.addColorStop(1, "black");
+                    ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
+                    
+                    ctx.fillStyle = "white"; ctx.font = "bold 16px Inter"; ctx.textAlign = "center";
+                    ctx.fillText(`ANÁLISIS DE TEJIDO: ${s.lev}% MUTADO`, cx, 40);
+                } 
+                
+                // MODO 2: MITOCONDRIAL (Célula gigante centrada)
+                else {
+                    // El radio se adapta al lado más pequeño de la pantalla para no salirse
+                    const r = Math.min(w, h) * 0.35;
+                    
+                    // Citoplasma
+                    ctx.fillStyle = "#0f172a"; ctx.strokeStyle = C.blue; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    
+                    // Núcleo
+                    ctx.fillStyle = "#1e293b"; 
+                    ctx.beginPath(); ctx.arc(cx, cy, r * 0.3, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.textAlign="center"; ctx.fillText("NÚCLEO", cx, cy+5);
+
+                    // Mitocondrias (Orbitando)
+                    const count = 40;
+                    for (let i = 0; i < count; i++) {
+                        // Distribuir en anillo
+                        const ang = (i / count) * Math.PI * 2 + f * 0.005 * (i%2==0?1:-1);
+                        const dist = r * 0.6 + Math.sin(f*0.02 + i)* (r*0.1);
+                        
+                        const mx = cx + Math.cos(ang) * dist;
+                        const my = cy + Math.sin(ang) * dist;
+                        
+                        // Color determinista basado en el porcentaje (lev)
+                        // Usamos el índice 'i' para decidir color estable
+                        const isMut = (i / count) < load;
+                        
+                        ctx.save();
+                        ctx.translate(mx, my);
+                        ctx.rotate(ang + Math.PI/2);
+                        
+                        ctx.fillStyle = isMut ? C.red : C.green;
+                        ctx.shadowBlur = isMut && load > 0.7 ? 10 : 0; // Brillar si es patológico
+                        ctx.shadowColor = C.red;
+                        
+                        ctx.beginPath(); ctx.ellipse(0, 0, 8, 4, 0, 0, Math.PI*2); ctx.fill();
+                        ctx.restore();
+                    }
+
+                    // Barra de Umbral
+                    const barY = h - 50;
+                    const barW = Math.min(300, w - 40);
+                    const barX = cx - barW/2;
+                    
+                    ctx.fillStyle = "#333"; ctx.fillRect(barX, barY, barW, 10);
+                    ctx.fillStyle = load > 0.7 ? C.red : C.green; // Cambia color si pasa umbral
+                    ctx.fillRect(barX, barY, barW * load, 10);
+                    
+                    // Marca del 70%
+                    ctx.strokeStyle = "white"; ctx.beginPath(); 
+                    ctx.moveTo(barX + barW*0.7, barY-5); ctx.lineTo(barX + barW*0.7, barY+15); ctx.stroke();
+                    ctx.fillStyle = "white"; ctx.font = "10px Inter"; ctx.fillText("UMBRAL (70%)", barX + barW*0.7, barY - 10);
+                }
+            }
+        },
+    ];
+
+    // --- MOTOR DE INICIALIZACIÓN Y EVENTOS ---
+    
+    function init() {
+        APP.canvas = document.createElement('canvas');
+        document.getElementById('viz-wrapper').appendChild(APP.canvas);
+        APP.ctx = APP.canvas.getContext('2d');
+        
+        window.addEventListener('resize', resize);
+        resize();
+        
+        loadLesson(1); // Cargar primera lección
+        animate();
+    }
+
+    function resize() {
+        const wrap = document.getElementById('viz-wrapper');
+        APP.width = wrap.clientWidth;
+        APP.height = wrap.clientHeight;
+        APP.canvas.width = APP.width;
+        APP.canvas.height = APP.height;
+    }
+
+    function loadLesson(id) {
+        APP.lessonId = id;
+        const lesson = LESSONS.find(l => l.id === id);
+        
+        // 1. Inicializar Estado
+        if(!APP.state[id]) {
+            APP.state[id] = {};
+            lesson.controls.forEach(c => {
+                APP.state[id][c.id] = c.val !== undefined ? c.val : c.options[0];
+            });
+        }
+        
+        // 2. Renderizar Menú
+        const menu = document.getElementById('menu-list');
+        menu.innerHTML = LESSONS.map(l => `
+            <div class="menu-item ${l.id === id ? 'active' : ''}" onclick="loadLesson(${l.id})">
+                <i class="fas ${l.icon}"></i> ${l.title}
+            </div>
+        `).join('');
+        
+        updateUI();
+    }
+
+    function updateState(key, val) {
+        APP.state[APP.lessonId][key] = val;
+        updateUI();
+    }
+
+    function updateUI() {
+        const l = LESSONS.find(x => x.id === APP.lessonId);
+        const s = APP.state[APP.lessonId];
+        
+        // Controles
+        const cContainer = document.getElementById('controls-container');
+        cContainer.innerHTML = l.controls.map(c => `
+            <div class="control-group">
+                <div class="control-label">${c.label}</div>
+                ${c.type === 'select' ? 
+                    `<select onchange="updateState('${c.id}', this.value)">
+                        ${c.options.map(o => `<option ${s[c.id]===o?'selected':''}>${o}</option>`).join('')}
+                    </select>` : 
+                    `<input type="range" min="${c.min}" max="${c.max}" value="${s[c.id]}" 
+                      oninput="updateState('${c.id}', this.value)">`
+                }
+            </div>
+        `).join('');
+        
+        // Código y Teoría
+        document.getElementById('code-content').innerHTML = l.code(s);
+        document.getElementById('theory-content').innerHTML = l.explain(s);
+        
+        // Stats
+        const stats = l.stats(s);
+        document.getElementById('stats-container').innerHTML = stats.map(st => `
+            <div class="stat-card">
+                <div class="stat-val">${st.v}</div>
+                <div class="stat-label">${st.l}</div>
+            </div>
+        `).join('');
+    }
+
+    function animate() {
+        const l = LESSONS.find(x => x.id === APP.lessonId);
+        if(l) {
+            l.render(APP.ctx, APP.width, APP.height, APP.frame, APP.state[APP.lessonId]);
+        }
+        APP.frame++;
+        requestAnimationFrame(animate);
+    }
+
+    // Arrancar Motor
+    document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</html>

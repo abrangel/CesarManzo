@@ -552,6 +552,35 @@
             }
         }
 
+        /* Botón de volver */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .back-button-elegant {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 122, 204, 0.2);
+            border: 1px solid #007acc;
+            color: #007acc;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .back-button-elegant:hover {
+            background: #007acc;
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 122, 204, 0.5);
+        }
+
     </style>
 </head>
 <body>
@@ -562,6 +591,11 @@
             <span>Algoritmos e Inteligencia Artificial</span>
         </div>
         <div class="menu" id="menuList"></div>
+        <div class="sidebar-footer">
+            <button onclick="window.close()" class="back-button-elegant">
+                <i class="fas fa-arrow-left"></i> VOLVER
+            </button>
+        </div>
     </div>
 
     <div class="main">
