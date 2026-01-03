@@ -21,6 +21,14 @@
             --text-muted: #8b9bb4;
             --dashboard-width: 320px;
             --nav-height: 70px;
+            
+            /* Nuevos colores para certificaciones */
+            --gold-cert: linear-gradient(135deg, #FFD700 0%, #FFC107 50%, #FFA500 100%);
+            --silver-cert: linear-gradient(135deg, #C0C0C0 0%, #D3D3D3 50%, #A9A9A9 100%);
+            --gold-glow: rgba(255, 215, 0, 0.4);
+            --silver-glow: rgba(192, 192, 192, 0.4);
+            --gold-dark: #B8860B;
+            --silver-dark: #808080;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -164,16 +172,23 @@
         .main-content-wrapper.expanded { margin-left: 0; }
 
         .top-nav {
-            display: flex; justify-content: space-between; align-items: center; padding: 0 40px; height: var(--nav-height);
+            display: flex; justify-content: center; align-items: center; padding: 0 40px; height: var(--nav-height);
             background: rgba(2, 5, 10, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border);
             position: sticky; top: 0; z-index: 100; width: 100%;
         }
-        .nav-logo { font-family: 'Orbitron'; font-weight: 900; font-size: 1.5rem; color: #fff; letter-spacing: 1px; }
-        .nav-logo span { color: var(--primary-glow); }
+        .nav-logo { 
+            font-family: 'Orbitron'; 
+            font-weight: 900; 
+            font-size: 1.8rem; 
+            color: var(--primary-glow); 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+        }
         
         .mobile-menu-trigger {
             display: none; background: transparent; border: none; color: var(--primary-glow);
-            font-size: 1.5rem; cursor: pointer; padding: 5px;
+            font-size: 1.5rem; cursor: pointer; padding: 5px; position: absolute; right: 25px;
         }
 
         .container { width: 90%; max-width: 1100px; margin: 0 auto; padding: 60px 0; }
@@ -183,13 +198,13 @@
             text-align: center; padding-top: 0;
         }
         .hero-title {
-            font-family: 'Orbitron'; font-size: clamp(2.5rem, 6vw, 5rem); margin: 0; font-weight: 900; line-height: 1.1;
+            font-family: 'Orbitron'; font-size: clamp(2.5rem, 6vw, 3.5rem); margin: 0; font-weight: 900; line-height: 1.2;
             background: linear-gradient(180deg, #fff 20%, var(--primary-glow) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.3)); min-height: 1.1em;
+            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.3)); min-height: 1.1em; margin-bottom: 25px;
         }
         .hero-subtitle {
             font-family: 'Share Tech Mono'; color: var(--text-muted); font-size: clamp(1rem, 1.5vw, 1.3rem);
-            margin-top: 25px; max-width: 750px; padding: 15px 25px; 
+            margin-top: 10px; max-width: 750px; padding: 15px 25px; 
             background: rgba(0, 243, 255, 0.03); border-radius: 4px; border-left: 3px solid var(--primary-glow);
         }
         .hero-cta {
@@ -214,6 +229,260 @@
         }
         .section-header::after {
             content: ''; flex-grow: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); margin-left: 20px;
+        }
+
+        /* Nueva sección de certificaciones Oracle - Estilo Premium */
+        .oracle-certifications {
+            margin: 60px 0;
+        }
+
+        .oracle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .oracle-card {
+            background: rgba(5, 10, 20, 0.8);
+            border-radius: 16px;
+            padding: 30px 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilo dorado para certificaciones Professional */
+        .oracle-card.professional {
+            border-color: var(--gold-dark);
+            background: linear-gradient(145deg, rgba(20, 15, 5, 0.9) 0%, rgba(40, 30, 10, 0.8) 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 215, 0, 0.2);
+        }
+
+        .oracle-card.professional::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.05) 50%, transparent 70%);
+            animation: shimmer 3s infinite linear;
+        }
+
+        .oracle-card.professional::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--gold-cert);
+            border-radius: 18px;
+            z-index: -1;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        /* Estilo plateado para certificaciones Associate */
+        .oracle-card.associate {
+            border-color: var(--silver-dark);
+            background: linear-gradient(145deg, rgba(15, 15, 20, 0.9) 0%, rgba(30, 30, 40, 0.8) 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(192, 192, 192, 0.2);
+        }
+
+        .oracle-card.associate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(192, 192, 192, 0.05) 50%, transparent 70%);
+            animation: shimmer 3s infinite linear;
+        }
+
+        .oracle-card.associate::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--silver-cert);
+            border-radius: 18px;
+            z-index: -1;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .oracle-card:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        .oracle-card.professional:hover {
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2), 0 0 30px rgba(255, 215, 0, 0.3);
+            border-color: #FFD700;
+        }
+
+        .oracle-card.associate:hover {
+            box-shadow: 0 20px 40px rgba(192, 192, 192, 0.2), 0 0 30px rgba(192, 192, 192, 0.3);
+            border-color: #C0C0C0;
+        }
+
+        .oracle-card:hover::after {
+            opacity: 0.8;
+        }
+
+        .cert-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .oracle-card.professional .cert-badge {
+            background: var(--gold-cert);
+            color: #000;
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .oracle-card.associate .cert-badge {
+            background: var(--silver-cert);
+            color: #000;
+            box-shadow: 0 0 10px var(--silver-glow);
+        }
+
+        .cert-image-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .oracle-card img {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            z-index: 2;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+            transition: transform 0.4s;
+        }
+
+        .oracle-card:hover img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .cert-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        .oracle-card.professional .cert-glow {
+            background: radial-gradient(circle, var(--gold-glow) 0%, transparent 70%);
+        }
+
+        .oracle-card.associate .cert-glow {
+            background: radial-gradient(circle, var(--silver-glow) 0%, transparent 70%);
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.8); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.4; }
+        }
+
+        .oracle-card h4 {
+            font-family: 'Orbitron';
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            z-index: 2;
+        }
+
+        .oracle-card.professional h4 {
+            background: var(--gold-cert);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .oracle-card.associate h4 {
+            background: var(--silver-cert);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
+        }
+
+        .cert-level {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-family: 'Share Tech Mono';
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            z-index: 2;
+        }
+
+        .oracle-card.professional .cert-level {
+            background: rgba(184, 134, 11, 0.2);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+        }
+
+        .oracle-card.associate .cert-level {
+            background: rgba(128, 128, 128, 0.2);
+            color: #C0C0C0;
+            border: 1px solid rgba(192, 192, 192, 0.5);
+            box-shadow: 0 0 10px rgba(192, 192, 192, 0.2);
+        }
+
+        .cert-status {
+            margin-top: 15px;
+            font-family: 'Rajdhani';
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            z-index: 2;
+        }
+
+        .oracle-card.professional .cert-status {
+            color: #FFD700;
+        }
+
+        .oracle-card.associate .cert-status {
+            color: #C0C0C0;
         }
 
         .tech-carousel-stage { perspective: 1200px; height: 250px; width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 50px; }
@@ -327,628 +596,18 @@
             .mobile-menu-trigger { display: block; }
         }
         @media (max-width: 768px) {
-            .hero-title { font-size: 3rem; }
+            .hero-title { font-size: 2.5rem; }
+            .oracle-grid { grid-template-columns: 1fr; }
+            .oracle-card { padding: 25px 20px; }
+            .oracle-card h4 { font-size: 1.1rem; }
             .tech-carousel-stage { transform: scale(0.8); }
             .bio-lab-container { height: auto; }
             .lab-workspace { flex-direction: column; }
             .lab-control-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--glass-border); padding: 20px; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
             .lab-control-group { flex: 1; min-width: 200px; }
             .lab-visualization-area { height: 350px; }
+            .nav-logo { font-size: 1.5rem; }
         }
-    </style>
-</head>
-<body>
-
-    <canvas id="neural-network-canvas"></canvas>
-    <div id="hologram-effect"></div>
-
-    <div class="dashboard-toggle-btn" id="desk-toggle-btn">
-        <i class="fas fa-chevron-left"></i>
-    </div>
-
-    <aside class="dashboard-panel" id="main-dashboard">
-        <div class="dashboard-header">
-            <h4>Perfil Profesional</h4>
-        </div>
-        
-        <div class="dashboard-profile">
-            <div class="profile-image-container">
-                <img src="https://i.imgur.com/9uqalE1.jpeg" alt="Cesar Manzo">
-            </div>
-            <div class="profile-name">CESAR MANZO</div>
-            
-            <div class="role-decoder-container">
-                <span id="role-text-decoder">INICIANDO...</span>
-                <span class="decoder-cursor"></span>
-            </div>
-        </div>
-
-        <div class="dashboard-widget">
-            <span class="widget-label">// SYSTEM_CORE Status: ONLINE</span>
-            <div class="cyber-core-container">
-                <div class="core-ring ring-1"></div>
-                <div class="core-ring ring-2"></div>
-                <div class="core-center"></div>
-            </div>
-        </div>
-
-        <nav class="social-container">
-            <a href="https://www.linkedin.com/in/cesar-manzo-394088261/" target="_blank" class="social-item">
-                <i class="fab fa-linkedin-in"></i>
-                <div class="social-text">LinkedIn <span>Perfil Profesional</span></div>
-            </a>
-            <a href="https://www.facebook.com/prince.field.abrahan" target="_blank" class="social-item">
-                <i class="fab fa-facebook-f"></i>
-                <div class="social-text">Facebook <span>Red Social</span></div>
-            </a>
-            <div class="social-item" id="btn-copy-email">
-                <i class="fas fa-envelope"></i>
-                <div class="social-text">Email <span>Copiar: abrahanstark@...</span></div>
-            </div>
-            <a href="https://github.com/abrangel" target="_blank" class="social-item">
-                <i class="fab fa-github"></i>
-                <div class="social-text">GitHub <span>Repositorios de Código</span></div>
-            </a>
-        </nav>
-
-        <div class="quick-stats">
-            <div class="stat-box">
-                <div class="stat-number">12+</div>
-                <div class="stat-label">PROYECTOS</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number alt">3</div>
-                <div class="stat-label">MÁSTERS</div>
-            </div>
-        </div>
-    </aside>
-
-    <div class="main-content-wrapper" id="content-area">
-        <header class="top-nav">
-            <div class="nav-logo">C.MANZO<span>.BIO.AI</span></div>
-            <button class="mobile-menu-trigger" id="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
-        </header>
-
-        <section class="hero-section container">
-            <h1 class="hero-title" id="typing-title"></h1>
-            <h2 class="hero-subtitle" id="typing-subtitle"></h2>
-            <a href="#portfolio-section" class="hero-cta">EXPLORAR MATRIZ ACADÉMICA</a>
-        </section>
-
-        <main class="container">
-            <section class="section-block" id="about-section">
-                <h3 class="section-header">PERFIL BIO-DIGITAL</h3>
-                <p style="font-size: 1.15rem; color: var(--text-main);">
-                    Médico y nutricionista en proceso de fusión con la vanguardia tecnológica. Mi objetivo es la simbiosis entre el conocimiento clínico y la potencia computacional. Actualmente cursando tres maestrías simultáneas en <strong style="color:var(--primary-glow)">Bioinformática</strong>, <strong style="color:var(--secondary-glow)">Ciencia de Datos</strong> y <strong style="color:var(--tertiary-glow)">Robótica</strong> para diseñar las soluciones de salud del futuro.
-                </p>
-            </section>
-
-            <section class="section-block" id="tech-section">
-                <h3 class="section-header">ARSENAL TECNOLÓGICO</h3>
-                <div class="tech-carousel-stage">
-                    <div class="tech-carousel-spinner" id="tech-spinner"></div>
-                </div>
-            </section>
-
-            <section class="section-block" id="portfolio-section">
-                <h3 class="section-header">MATRIZ ACADÉMICA</h3>
-                <div class="masters-grid">
-                    <article class="master-card unir-featured">
-                        <h4 class="master-title">Máster en Bioinformática</h4>
-                        <span class="master-school">Universidad Internacional de La Rioja (UNIR)</span>
-                        <div class="modules-grid">
-                            <a href="Algoritmos e Inteligencia Artificial.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-brain"></i> Algoritmos e IA</div></a>
-                            <a href="Programación Científica y Linux.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-terminal"></i> Prog. Científica y Linux</div></a>
-                            <a href="Estadística y R para Ciencias de la Salud.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-chart-bar"></i> Estadística y R</div></a>
-                            <a href="Secuenciación y Ómicas de Próxima Generación.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-dna"></i> Secuenciación Ómicas (NGS)</div></a>
-                            <a href="Genética Clínica y de Poblaciones.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-users"></i> Genética de Poblaciones</div></a>
-                            <a href="Aspectos Legales y Bioetica.html" target="_blank" style="text-decoration: none; color: inherit;"><div class="module-item"><i class="fas fa-scale-balanced"></i> Aspectos Éticos/Legales</div></a>
-                        </div>
-                    </article>
-
-                    <article class="master-card">
-                        <h4 class="master-title">Máster en Ciencia de Datos</h4>
-                        <span class="master-school">Techtitute (En Progreso)</span>
-                        <div class="modules-grid">
-                            <div class="module-item"><i class="fas fa-database"></i> Analítica del Dato</div>
-                            <div class="module-item"><i class="fas fa-chart-pie"></i> Visualización Avanzada</div>
-                            <div class="module-item"><i class="fas fa-robot"></i> Machine Learning</div>
-                        </div>
-                    </article>
-
-                    <article class="master-card" style="border-left-color: var(--tertiary-glow);">
-                        <h4 class="master-title">Máster en Robótica</h4>
-                        <span class="master-school">Techtitute (En Progreso)</span>
-                        <div class="modules-grid">
-                            <div class="module-item"><i class="fas fa-cogs"></i> Diseño Robótico</div>
-                            <div class="module-item"><i class="fas fa-code-branch"></i> Control y Programación</div>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="section-block" id="lab-section">
-                <h3 class="section-header">LABORATORIO BIO-COMPUTACIONAL</h3>
-                
-                <div class="bio-lab-container">
-                    <div class="lab-tabs-header" id="lab-tabs">
-                        <div class="lab-tab-btn active" data-mod="neural">IA GENÓMICA (REDES)</div>
-                        <div class="lab-tab-btn" data-mod="meta">METAGENÓMICA (CLUSTERS)</div>
-                        <div class="lab-tab-btn" data-mod="seq">SECUENCIACIÓN (ADN FLUJO)</div>
-                    </div>
-                    
-                    <div class="lab-workspace">
-                        <div class="lab-control-panel" id="lab-controls-dock"></div>
-                        
-                        <div class="lab-visualization-area" id="lab-viz-container">
-                            <div class="lab-overlay-data">// VIZ_DATA_STREAM: ACTIVE<br>RTA: <span id="rta-value">0.0ms</span></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer class="main-footer">
-            SYSTEM://BIO-AI_INTERFACE_v3.5_STABLE | &copy; 2025 Cesar Manzo | <a href="https://github.com/abrangel" target="_blank">[ACCESO A CÓDIGO FUENTE]</a>
-        </footer>
-    </div>
-
-    <div class="mobile-nav-overlay" id="mobile-nav">
-        <button class="mobile-menu-close" id="close-mobile-nav">×</button>
-        <a href="#about-section" class="mobile-nav-link">Perfil</a>
-        <a href="#tech-section" class="mobile-nav-link">Tecnologías</a>
-        <a href="#portfolio-section" class="mobile-nav-link">Portafolio</a>
-        <a href="#lab-section" class="mobile-nav-link">Laboratorio</a>
-        <a href="#" class="mobile-nav-link" id="mobile-dash-trigger">→ Panel Lateral</a>
-    </div>
-
-    <script>
-        // Fondo de partículas neuronales
-        const canvas = document.getElementById('neural-network-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            initParticles();
-        }
-        window.addEventListener('resize', resizeCanvas);
-
-        function initParticles() {
-            particles = [];
-            const count = window.innerWidth < 768 ? 50 : 100;
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5,
-                    radius: Math.random() * 2 + 1,
-                    color: i % 3 === 0 ? '#00f3ff' : (i % 3 === 1 ? '#bc13fe' : '#0aff48')
-                });
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p, i) => {
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    const p2 = particles[j];
-                    const dx = p.x - p2.x; const dy = p.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(0, 243, 255, ${1 - dist / 100})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        resizeCanvas(); animateParticles();
-
-        // Interfaz y navegación
-        const deskToggleBtn = document.getElementById('desk-toggle-btn');
-        const dashboard = document.getElementById('main-dashboard');
-        const contentArea = document.getElementById('content-area');
-        
-        deskToggleBtn.addEventListener('click', () => {
-            dashboard.classList.toggle('minimized');
-            contentArea.classList.toggle('expanded');
-            deskToggleBtn.classList.toggle('minimized');
-            deskToggleBtn.innerHTML = dashboard.classList.contains('minimized') 
-                ? '<i class="fas fa-chevron-right"></i>' 
-                : '<i class="fas fa-chevron-left"></i>';
-        });
-
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileNav = document.getElementById('mobile-nav');
-        const closeMobileNav = document.getElementById('close-mobile-nav');
-        const mobileDashTrigger = document.getElementById('mobile-dash-trigger');
-
-        function toggleMobileNav(open) {
-            mobileNav.classList.toggle('active', open);
-            document.body.classList.toggle('menu-open', open);
-        }
-        mobileMenuBtn.addEventListener('click', () => toggleMobileNav(true));
-        closeMobileNav.addEventListener('click', () => toggleMobileNav(false));
-        document.querySelectorAll('.mobile-nav-link:not(#mobile-dash-trigger)').forEach(link => {
-            link.addEventListener('click', () => toggleMobileNav(false));
-        });
-        mobileDashTrigger.addEventListener('click', () => {
-            toggleMobileNav(false);
-            dashboard.classList.add('active');
-        });
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 1024 && dashboard.classList.contains('active') && !dashboard.contains(e.target) && e.target !== mobileDashTrigger) {
-                 dashboard.classList.remove('active');
-            }
-        });
-
-        document.getElementById('btn-copy-email').addEventListener('click', () => {
-            navigator.clipboard.writeText('abrahanstark@gmail.com');
-            alert('Dirección de email copiada al portapapeles: abrahanstark@gmail.com');
-        });
-
-        const sectionObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if(entry.isIntersecting) entry.target.classList.add('visible');
-            });
-        }, { threshold: 0.15 });
-        document.querySelectorAll('.section-block').forEach(section => sectionObserver.observe(section));
-
-        // Animaciones de texto
-        const roles = ["BIOINFORMATICS", "DATA SCIENTIST", "ROBOTICS AI", "GENOMICS DEV", "MEDICAL TECH"];
-        let roleIdx = 0;
-        const roleElement = document.getElementById('role-text-decoder');
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_!@#$%^&*";
-
-        function decodeText() {
-            const targetText = roles[roleIdx];
-            let iterations = 0;
-            const interval = setInterval(() => {
-                roleElement.innerText = targetText.split("").map((letter, index) => {
-                    if(index < iterations) return targetText[index];
-                    return chars[Math.floor(Math.random() * chars.length)];
-                }).join("");
-                
-                if(iterations >= targetText.length) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        roleIdx = (roleIdx + 1) % roles.length;
-                        decodeText();
-                    }, 3000);
-                }
-                iterations += 1/3; 
-            }, 40);
-        }
-        setTimeout(decodeText, 1000);
-
-        const titleText = "CESAR MANZO";
-        const subtitleText = "Navegando la Sinergia de Bioinformática, IA y Robótica.";
-        const titleEl = document.getElementById('typing-title');
-        const subtitleEl = document.getElementById('typing-subtitle');
-        
-        function typeWriter(text, element, speed, callback) {
-            let i = 0;
-            element.innerHTML = "";
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
-                } else if (callback) {
-                    callback();
-                }
-            }
-            type();
-        }
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                 typeWriter(titleText, titleEl, 100, () => {
-                     setTimeout(() => {
-                         typeWriter(subtitleText, subtitleEl, 50);
-                     }, 500);
-                 });
-            }, 500);
-        });
-
-        // Carrusel 3D de tecnologías
-        const techData = [
-            {n:'Python', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg'},
-            {n:'R Lang', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/r/r-original.svg'},
-            {n:'TensorFlow', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg'},
-            {n:'PyTorch', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg'},
-            {n:'Linux', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg'},
-            {n:'Docker', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg'},
-            {n:'Git', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg'},
-            {n:'SQL', i:'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg'}
-        ];
-        const spinner = document.getElementById('tech-spinner');
-        let angle = 0;
-
-        techData.forEach((tech, index) => {
-            const card = document.createElement('div');
-            card.className = 'tech-card';
-            card.innerHTML = `<img src="${tech.i}" alt="${tech.n}"><span>${tech.n}</span>`;
-            spinner.appendChild(card);
-            const theta = (index / techData.length) * Math.PI * 2;
-            const radius = 280;
-            card.style.transform = `rotateY(${theta}rad) translateZ(${radius}px)`;
-        });
-
-        function rotateCarousel() {
-            angle -= 0.2;
-            spinner.style.transform = `rotateY(${angle}deg)`;
-            requestAnimationFrame(rotateCarousel);
-        }
-        rotateCarousel();
-
-        // Laboratorio Bio-Computacional
-        const BioLab = {
-            currentMod: null,
-            animationFrame: null,
-            ctx: null,
-            canvas: null,
-            params: {},
-            rtaElement: document.getElementById('rta-value'),
-
-            modules: {
-                neural: {
-                    controls: [{id:'speed', label:'VELOCIDAD DE SEÑAL', type:'range', min:1, max:20, val:5}],
-                    init: function(ctx, width, height) {
-                        this.nodes = []; this.signals = []; this.connections = [];
-                        const layers = [4, 6, 6, 3]; 
-                        const layerX = width / (layers.length + 1);
-                        let prevNodes = [];
-                        layers.forEach((count, lIdx) => {
-                            const layerY = height / (count + 1);
-                            const layerNodes = [];
-                            for(let i = 0; i < count; i++) {
-                                const node = { x: layerX * (lIdx + 1), y: layerY * (i + 1), layer: lIdx, pulse: 0 };
-                                this.nodes.push(node);
-                                layerNodes.push(node);
-                            }
-                            if (lIdx > 0) {
-                                prevNodes.forEach(n1 => {
-                                    layerNodes.forEach(n2 => {
-                                        this.connections.push({from: n1, to: n2});
-                                    });
-                                });
-                            }
-                            prevNodes = layerNodes;
-                        });
-                    },
-                    draw: function(ctx, width, height, params, rtaEl) {
-                        ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(0,0,width,height);
-                        const speed = parseInt(params.speed || 5);
-                        rtaEl.innerText = (1000 / speed).toFixed(1) + 'ms';
-
-                        if (Math.random() > 0.98 - (speed / 40)) {
-                            const inputNodes = this.nodes.filter(n => n.layer === 0);
-                            if (inputNodes.length > 0) {
-                                const startNode = inputNodes[Math.floor(Math.random() * inputNodes.length)];
-                                const outConns = this.connections.filter(c => c.from === startNode);
-                                outConns.forEach(conn => this.signals.push({conn, prog: 0}));
-                                startNode.pulse = 1;
-                            }
-                        }
-
-                        ctx.strokeStyle = 'rgba(0, 243, 255, 0.2)'; ctx.lineWidth = 1;
-                        this.connections.forEach(c => {
-                            ctx.beginPath(); ctx.moveTo(c.from.x, c.from.y); ctx.lineTo(c.to.x, c.to.y); ctx.stroke();
-                        });
-
-                        ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 10;
-                        for (let i = this.signals.length - 1; i >= 0; i--) {
-                            const s = this.signals[i];
-                            s.prog += speed * 0.005;
-                            const curX = s.conn.from.x + (s.conn.to.x - s.conn.from.x) * s.prog;
-                            const curY = s.conn.from.y + (s.conn.to.y - s.conn.from.y) * s.prog;
-                            ctx.fillStyle = '#fff';
-                            ctx.beginPath(); ctx.arc(curX, curY, 4, 0, Math.PI * 2); ctx.fill();
-
-                            if (s.prog >= 1) {
-                                s.conn.to.pulse = 1;
-                                const nextConns = this.connections.filter(c => c.from === s.conn.to);
-                                nextConns.forEach(nc => this.signals.push({conn: nc, prog: 0}));
-                                this.signals.splice(i, 1);
-                            }
-                        }
-                        ctx.shadowBlur = 0;
-
-                        this.nodes.forEach(n => {
-                            n.pulse = Math.max(0, n.pulse - 0.05);
-                            ctx.beginPath(); ctx.arc(n.x, n.y, 6 + n.pulse * 4, 0, Math.PI * 2);
-                            ctx.fillStyle = `rgba(0, 243, 255, ${0.6 + n.pulse * 0.4})`; ctx.fill();
-                        });
-                    }
-                },
-                meta: {
-                    controls: [{id:'clusters', label:'CLUSTERS (GRUPOS)', type:'select', opts:['3','4','5','6'], val:'4'}],
-                    init: function(ctx, width, height) {
-                        this.points = Array.from({length: 500}, () => ({
-                            angle: Math.random() * Math.PI * 2,
-                            radius: Math.random() * 80 + 20,
-                            speed: (Math.random() - 0.5) * 0.03
-                        }));
-                        this.colors = ['#00f3ff', '#bc13fe', '#0aff48', '#ff0f7b', '#ffa500', '#ff00ff'];
-                    },
-                    draw: function(ctx, width, height, params, rtaEl) {
-                        ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0,0,width,height);
-                        const numClusters = parseInt(params.clusters || 4);
-                        rtaEl.innerText = `Analyzing ${this.points.length} reads → ${numClusters} taxa`;
-
-                        const centerX = width / 2;
-                        const centerY = height / 2;
-
-                        for (let i = 0; i < numClusters; i++) {
-                            const clusterAngle = (Math.PI * 2 / numClusters) * i + (Date.now() / 6000);
-                            const clusterCX = centerX + Math.cos(clusterAngle) * 120;
-                            const clusterCY = centerY + Math.sin(clusterAngle) * 100;
-                            const col = this.colors[i % this.colors.length];
-
-                            ctx.beginPath(); ctx.arc(clusterCX, clusterCY, 8, 0, Math.PI * 2);
-                            ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 20; ctx.fill();
-                            ctx.shadowBlur = 0;
-
-                            const pointsPerCluster = Math.floor(this.points.length / numClusters);
-                            const start = i * pointsPerCluster;
-                            const end = i === numClusters - 1 ? this.points.length : (i + 1) * pointsPerCluster;
-                            for (let j = start; j < end; j++) {
-                                const p = this.points[j];
-                                p.angle += p.speed;
-                                const px = clusterCX + Math.cos(p.angle) * p.radius;
-                                const py = clusterCY + Math.sin(p.angle) * p.radius;
-                                ctx.fillStyle = col;
-                                ctx.fillRect(px - 1.5, py - 1.5, 3, 3);
-                            }
-                        }
-                    }
-                },
-                seq: {
-                    controls: [{id:'flow', label:'FLUJO DE LECTURA', type:'range', min:1, max:20, val:10}],
-                    init: function() {
-                        this.offset = 0;
-                        this.bases = 'ACGT';
-                        this.complementary = {'A':'T', 'T':'A', 'C':'G', 'G':'C'};
-                        this.baseColors = {'A': '#00ff00', 'T': '#ff0000', 'C': '#0000ff', 'G': '#ffa500'};
-                    },
-                    draw: function(ctx, width, height, params, rtaEl) {
-                        ctx.fillStyle = '#000'; ctx.fillRect(0,0,width,height);
-                        const speed = parseInt(params.flow || 10);
-                        this.offset += speed;
-                        rtaEl.innerText = `Seq Rate: ${(speed * 2).toFixed(1)} Kb/s`;
-
-                        const centerY = height / 2;
-                        const amplitude = 50;
-                        const frequency = 0.02;
-
-                        for (let x = 0; x < width; x += 12) {
-                            const effectiveX = x + this.offset;
-                            const y1 = centerY + Math.sin(effectiveX * frequency) * amplitude;
-                            const y2 = centerY + Math.sin(effectiveX * frequency + Math.PI) * amplitude;
-
-                            ctx.fillStyle = '#00f3ff';
-                            ctx.beginPath(); ctx.arc(x, y1, 4, 0, Math.PI * 2); ctx.fill();
-                            ctx.fillStyle = '#0aff48';
-                            ctx.beginPath(); ctx.arc(x, y2, 4, 0, Math.PI * 2); ctx.fill();
-
-                            if (x % 48 === 0) {
-                                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-                                ctx.lineWidth = 2;
-                                ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
-
-                                const baseIdx = Math.floor(effectiveX / 48) % 4;
-                                const base1 = this.bases[baseIdx];
-                                const base2 = this.complementary[base1];
-
-                                ctx.font = 'bold 14px Share Tech Mono';
-                                ctx.fillStyle = this.baseColors[base1];
-                                ctx.fillText(base1, x - 8, y1 + 12);
-                                ctx.fillStyle = this.baseColors[base2];
-                                ctx.fillText(base2, x - 8, y2 - 8);
-                            }
-                        }
-                    }
-                }
-            },
-
-            loadModule: function(modId) {
-                if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
-                this.currentMod = this.modules[modId];
-                
-                const container = document.getElementById('lab-viz-container');
-                container.innerHTML = '<div class="lab-overlay-data">// VIZ_DATA_STREAM: ACTIVE<br>RTA: <span id="rta-value">...</span></div>';
-                this.rtaElement = document.getElementById('rta-value');
-
-                this.canvas = document.createElement('canvas');
-                this.canvas.width = container.offsetWidth;
-                this.canvas.height = container.offsetHeight;
-                container.appendChild(this.canvas);
-                this.ctx = this.canvas.getContext('2d');
-
-                const controlsDock = document.getElementById('lab-controls-dock');
-                controlsDock.innerHTML = '';
-                this.params = {};
-                this.currentMod.controls.forEach(ctl => {
-                    this.params[ctl.id] = ctl.val;
-                    const group = document.createElement('div');
-                    group.className = 'lab-control-group';
-                    group.innerHTML = `<label>${ctl.label}</label>`;
-                    let input;
-                    if (ctl.type === 'select') {
-                        input = document.createElement('select');
-                        input.className = 'lab-input-select';
-                        ctl.opts.forEach(o => {
-                            const opt = document.createElement('option');
-                            opt.value = o; opt.textContent = o;
-                            if (o === ctl.val) opt.selected = true;
-                            input.appendChild(opt);
-                        });
-                    } else {
-                        input = document.createElement('input');
-                        input.type = 'range';
-                        input.className = 'lab-input-range';
-                        input.min = ctl.min; input.max = ctl.max; input.value = ctl.val;
-                    }
-                    input.addEventListener('input', (e) => this.params[ctl.id] = e.target.value);
-                    group.appendChild(input);
-                    controlsDock.appendChild(group);
-                });
-
-                if (this.currentMod.init) this.currentMod.init(this.ctx, this.canvas.width, this.canvas.height);
-                this.animate();
-
-                document.querySelectorAll('.lab-tab-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.mod === modId);
-                });
-            },
-
-            animate: function() {
-                if (!this.currentMod) return;
-                this.currentMod.draw(this.ctx, this.canvas.width, this.canvas.height, this.params, this.rtaElement);
-                this.animationFrame = requestAnimationFrame(() => this.animate());
-            }
-        };
-
-        function handleLabResize() {
-            if (BioLab.canvas && BioLab.canvas.parentElement) {
-                const container = BioLab.canvas.parentElement;
-                BioLab.canvas.width = container.offsetWidth;
-                BioLab.canvas.height = container.offsetHeight;
-                if (BioLab.currentMod && BioLab.currentMod.init) {
-                    BioLab.currentMod.init(BioLab.ctx, BioLab.canvas.width, BioLab.canvas.height);
-                }
-            }
-        }
-        window.addEventListener('resize', handleLabResize);
-
-        document.getElementById('lab-tabs').addEventListener('click', (e) => {
-            if (e.target.classList.contains('lab-tab-btn')) {
-                BioLab.loadModule(e.target.dataset.mod);
-                handleLabResize();
-            }
-        });
-
-        window.addEventListener('load', () => {
-            BioLab.loadModule('neural');
-            handleLabResize();
-        });
     </script>
 </body>
 </html>
